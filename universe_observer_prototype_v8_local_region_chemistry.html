@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Universe Observer Prototype v8 — Local Chemistry Regions + Latent Atomic Authority</title>
+<style>
+:root{
+  --bg:#040913; --bg2:#08111f; --panel:#0d1728; --panel2:#101d32; --line:#1f3656;
+  --text:#eaf3ff; --muted:#90a8c7; --accent:#79e7ff; --accent2:#9886ff; --good:#84ffb7; --warn:#ffd37b; --bad:#ff9b9b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:radial-gradient(circle at top,#0a1424 0%,#050912 55%,#02050a 100%);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+.app{display:grid;grid-template-columns:320px 1fr 380px;gap:14px;height:100%;padding:14px}
+.panel{min-height:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.016))}
+.pad{padding:16px}.stack{display:flex;flex-direction:column;gap:12px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}.triple{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.title{font-size:20px;font-weight:700}.subtitle{font-size:13px;color:var(--muted);line-height:1.45}
+.btn,.field,select,input[type="range"]{width:100%;font:inherit}
+.btn,.field,select{background:linear-gradient(180deg,rgba(121,231,255,.09),rgba(152,134,255,.05));color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.btn{cursor:pointer;text-align:left}.btn.small{width:auto;padding:8px 10px}
+label.small{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+.metricGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.022)}
+.metric .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}.metric .v{font-size:20px;font-weight:700;margin-top:4px}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.kv:last-child{border-bottom:none}.kv .k{font-size:12px;color:var(--muted)}.kv .v{font-size:13px;font-weight:600;text-align:right}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.03)}
+.badge.good{color:var(--good)}.badge.warn{color:var(--warn)}.badge.bad{color:var(--bad)}
+canvas{display:block;width:100%;height:100%}
+#viewWrap{position:relative;height:calc(100% - 64px);min-height:520px}
+#universeCanvas{height:100%;background:radial-gradient(circle at center,#08111f 0%,#030811 72%,#01040a 100%)}
+.overlay{position:absolute;left:14px;right:14px;top:14px;display:flex;justify-content:space-between;gap:12px;pointer-events:none}
+.overlayCard{pointer-events:auto;background:rgba(6,12,24,.7);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:220px}
+.smallmono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#d6ecff}
+.list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto}
+.item{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);cursor:pointer}
+.item.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(121,231,255,.35) inset}
+.bar{height:10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);overflow:hidden}.bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.tagRow{display:flex;flex-wrap:wrap;gap:8px}
+.table{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center;font-size:13px}
+.table .head{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.12em;padding-top:4px}
+hr.sep{border:none;border-top:1px solid rgba(255,255,255,.06);margin:0}
+.scroll{overflow:auto;max-height:100%}
+.note{font-size:12px;color:var(--muted);line-height:1.45}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+.timelineRow{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+@media (max-width:1280px){.app{grid-template-columns:300px 1fr}.rightCol{grid-column:1 / -1;height:460px}}
+@media (max-width:900px){.app{grid-template-columns:1fr}.rightCol{height:auto}.panel{min-height:420px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="panel">
+    <div class="pad stack scroll">
+      <div>
+        <div class="title">Universe Engine v8</div>
+        <div class="subtitle">Single-seed cosmology with latent atomic authority. Atoms are treated as truly present and calculable from the seed/timeline, while the render stays field-based and lightweight. Planet selections now expose bulk atoms, reservoir atoms, seeded local-region atomic maps, and local molecule/reaction windows. Atoms remain present in source authority and calculable from the same seed/timeline, while render stays compressed.</div>
+      </div>
+
+      <div class="stack">
+        <div>
+          <label class="small">Master Seed</label>
+          <input id="seedInput" class="field" value="GARY-UNIVERSE-001" />
+        </div>
+        <div>
+          <label class="small">Timeline</label>
+          <div class="timelineRow">
+            <button id="playBtn" class="btn small">Play</button>
+            <input id="ageSlider" type="range" min="0" max="1380" value="920" />
+            <button id="resetBtn" class="btn small">Reset</button>
+          </div>
+          <div class="kv"><div class="k">Epoch</div><div id="epochLabel" class="v">9.20 Gyr</div></div>
+        </div>
+        <div class="split">
+          <div>
+            <label class="small">View Mode</label>
+            <select id="modeSelect">
+              <option value="galaxy">Galaxy</option>
+              <option value="system">System</option>
+              <option value="planet">Planet</option>
+              <option value="truth">Planet Truth-Shell</option>
+            </select>
+          </div>
+          <div>
+            <label class="small">Playback Rate</label>
+            <select id="timeScaleSelect">
+              <option value="0.02">1x</option>
+              <option value="0.08">10x</option>
+              <option value="0.2">100x</option>
+              <option value="0.8" selected>1000x</option>
+              <option value="3.0">1M x</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="metricGrid">
+        <div class="metric"><div class="k">Cosmic Phase</div><div id="phaseLabel" class="v">Settling</div></div>
+        <div class="metric"><div class="k">Energy Status</div><div id="energyState" class="v good">Balanced</div></div>
+        <div class="metric"><div class="k">Life-Capable Worlds</div><div id="lifeCount" class="v">0</div></div>
+        <div class="metric"><div class="k">Biosphere Worlds</div><div id="biosphereCount" class="v">0</div></div>
+        <div class="metric"><div class="k">Atlas Nodes</div><div id="atlasCount" class="v">0</div></div>
+        <div class="metric"><div class="k">Anomalies</div><div id="anomalyCount" class="v">0</div></div>
+        <div class="metric"><div class="k">Atomic Fields</div><div id="atomicFieldCount" class="v">0</div></div>
+        <div class="metric"><div class="k">Reservoir Maps</div><div id="reservoirCount" class="v">0</div></div>
+      </div>
+
+      <div class="stack">
+        <div class="badge">UniverseRoot = { seed, origin=0, law=v5, constants=v1 }</div>
+        <div class="badge">Energy invariant: ΔE_total = 0</div>
+        <div class="badge">Visible iff dist ≤ c_sim × Δt</div>
+      </div>
+
+      <div>
+        <div class="row" style="justify-content:space-between"><div class="title" style="font-size:16px">Atlas Objects</div><button id="regenBtn" class="btn small">Regenerate</button></div>
+        <div id="atlasList" class="list"></div>
+      </div>
+
+      <div class="stack">
+        <div class="title" style="font-size:16px">Build Lock</div>
+        <div class="note">This file keeps the system on one master seed and one timeline slider. It still uses synthetic law approximations, but the source flow is now single-seed → timeline → fields → stars → planets → chemistry threshold.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="pad" style="padding-bottom:8px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div class="title">Outside Observer Surface</div>
+          <div class="subtitle">Galaxy → system → planet → truth-shell zoom path. Distant state is rendered as delayed, observer-limited information.</div>
+        </div>
+        <div class="tagRow">
+          <span id="phaseBadge" class="badge">phase</span>
+          <span id="selectionBadge" class="badge">selection</span>
+        </div>
+      </div>
+    </div>
+    <div id="viewWrap">
+      <canvas id="universeCanvas" width="1200" height="800"></canvas>
+      <div class="overlay">
+        <div class="overlayCard">
+          <div class="smallmono">Render Envelope</div>
+          <div class="kv"><div class="k">Scale Factor a(t)</div><div id="scaleFactor" class="v">1.000</div></div>
+          <div class="kv"><div class="k">Local Clock Factor</div><div id="clockFactor" class="v">1.0000</div></div>
+          <div class="kv"><div class="k">Observer Distance</div><div id="observerDistance" class="v">0.00 ly</div></div>
+          <div class="kv"><div class="k">Visible Delay</div><div id="lightDelay" class="v">0.00 yr</div></div>
+        </div>
+        <div class="overlayCard">
+          <div class="smallmono">Conservation Ledger</div>
+          <div class="kv"><div class="k">Radiation</div><div id="eRad" class="v">0</div></div>
+          <div class="kv"><div class="k">Thermal</div><div id="eTherm" class="v">0</div></div>
+          <div class="kv"><div class="k">Binding</div><div id="eBind" class="v">0</div></div>
+          <div class="kv"><div class="k">Motion</div><div id="eMove" class="v">0</div></div>
+          <div class="kv"><div class="k">Field</div><div id="eField" class="v">0</div></div>
+          <div class="kv"><div class="k">Mass Proxy</div><div id="eMass" class="v">0</div></div>
+          <div class="kv"><div class="k">Δ Total</div><div id="eDelta" class="v good">0.0000</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel rightCol">
+    <div class="pad stack scroll">
+      <div>
+        <div class="title">Selection Authority</div>
+        <div class="subtitle">Selected object lineage, composition, chemistry thresholds, life capability, and anomaly receipts sourced from the same seed contracts.</div>
+      </div>
+
+      <div id="selectionDetails" class="stack"></div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Atom Inventory</div>
+        <div id="atomSummary" class="stack"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Top Element Fractions</div>
+        <div id="elementBars" class="stack"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Latent Atomic Reservoirs</div>
+        <div class="note">Atoms are treated as present in the source state even when the final render uses compressed field math. Reservoir estimates stay replayable from seed + timeline.</div>
+        <div id="reservoirBars" class="stack"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Seeded Local Region Atomic Map</div>
+        <div id="regionAtoms" class="stack"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Local Region Molecules / Reactions</div>
+        <div id="regionMolecules" class="stack"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Molecule / Reaction Potential</div>
+        <div id="moleculeBars" class="stack"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Chemistry / Biosphere Threshold</div>
+        <div id="chemistryBars" class="stack"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Anomaly Receipts</div>
+        <div id="anomalyList" class="list"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <div>
+        <div class="title" style="font-size:16px">Element Authority Snapshot</div>
+        <div class="note">Runtime still prioritizes formation-critical elements, but every record is derived from the one master seed and timeline context.</div>
+        <div id="elementTable" class="table"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('universeCanvas');
+  const ctx = canvas.getContext('2d');
+  const seedInput = document.getElementById('seedInput');
+  const ageSlider = document.getElementById('ageSlider');
+  const modeSelect = document.getElementById('modeSelect');
+  const regenBtn = document.getElementById('regenBtn');
+  const atlasList = document.getElementById('atlasList');
+  const selectionDetails = document.getElementById('selectionDetails');
+  const anomalyList = document.getElementById('anomalyList');
+  const atomSummary = document.getElementById('atomSummary');
+  const elementBars = document.getElementById('elementBars');
+  const reservoirBars = document.getElementById('reservoirBars');
+  const regionAtoms = document.getElementById('regionAtoms');
+  const moleculeBars = document.getElementById('moleculeBars');
+  const regionMolecules = document.getElementById('regionMolecules');
+  const chemistryBars = document.getElementById('chemistryBars');
+  const elementTable = document.getElementById('elementTable');
+  const playBtn = document.getElementById('playBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const timeScaleSelect = document.getElementById('timeScaleSelect');
+
+  const ELEMENTS = [
+    {sym:'H', Z:1, mass:1.008, family:'primordial_gas', condenseK:14, density:0.00009, bio:0.6, rock:0.0, metal:0.0, gas:1.0, ice:0.1},
+    {sym:'He',Z:2, mass:4.003, family:'primordial_gas', condenseK:4, density:0.00018, bio:0.0, rock:0.0, metal:0.0, gas:1.0, ice:0.0},
+    {sym:'C', Z:6, mass:12.011,family:'prebiotic', condenseK:40, density:2.2, bio:1.0, rock:0.4, metal:0.0, gas:0.1, ice:0.3},
+    {sym:'N', Z:7, mass:14.007,family:'volatile', condenseK:63, density:0.0012, bio:0.8, rock:0.0, metal:0.0, gas:0.8, ice:0.3},
+    {sym:'O', Z:8, mass:15.999,family:'rock_former', condenseK:54, density:0.0014, bio:1.0, rock:0.9, metal:0.0, gas:0.5, ice:0.8},
+    {sym:'Ne',Z:10,mass:20.180,family:'volatile', condenseK:25, density:0.0009, bio:0.0, rock:0.0, metal:0.0, gas:1.0, ice:0.0},
+    {sym:'Na',Z:11,mass:22.990,family:'rock_former', condenseK:958, density:0.97, bio:0.2, rock:0.4, metal:0.2, gas:0.0, ice:0.0},
+    {sym:'Mg',Z:12,mass:24.305,family:'rock_former', condenseK:1336,density:1.74, bio:0.2, rock:0.9, metal:0.3, gas:0.0, ice:0.0},
+    {sym:'Al',Z:13,mass:26.982,family:'rock_former', condenseK:1653,density:2.70, bio:0.1, rock:0.8, metal:0.3, gas:0.0, ice:0.0},
+    {sym:'Si',Z:14,mass:28.085,family:'rock_former', condenseK:1310,density:2.33, bio:0.2, rock:1.0, metal:0.0, gas:0.0, ice:0.0},
+    {sym:'P', Z:15,mass:30.974,family:'prebiotic', condenseK:1200,density:1.82, bio:0.7, rock:0.5, metal:0.1, gas:0.0, ice:0.0},
+    {sym:'S', Z:16,mass:32.06, family:'volatile', condenseK:664, density:2.07, bio:0.5, rock:0.3, metal:0.1, gas:0.1, ice:0.1},
+    {sym:'Cl',Z:17,mass:35.45, family:'volatile', condenseK:172, density:0.0032, bio:0.3, rock:0.0, metal:0.0, gas:0.8, ice:0.2},
+    {sym:'Ar',Z:18,mass:39.948,family:'volatile', condenseK:84, density:0.0018, bio:0.0, rock:0.0, metal:0.0, gas:1.0, ice:0.0},
+    {sym:'K', Z:19,mass:39.098,family:'rock_former', condenseK:1006,density:0.86, bio:0.4, rock:0.4, metal:0.2, gas:0.0, ice:0.0},
+    {sym:'Ca',Z:20,mass:40.078,family:'rock_former', condenseK:1517,density:1.55, bio:0.3, rock:0.8, metal:0.2, gas:0.0, ice:0.0},
+    {sym:'Ti',Z:22,mass:47.867,family:'metal', condenseK:1582,density:4.50, bio:0.0, rock:0.3, metal:0.8, gas:0.0, ice:0.0},
+    {sym:'Cr',Z:24,mass:51.996,family:'metal', condenseK:1296,density:7.19, bio:0.0, rock:0.1, metal:0.9, gas:0.0, ice:0.0},
+    {sym:'Mn',Z:25,mass:54.938,family:'metal', condenseK:1158,density:7.21, bio:0.1, rock:0.1, metal:0.9, gas:0.0, ice:0.0},
+    {sym:'Fe',Z:26,mass:55.845,family:'metal', condenseK:1334,density:7.87, bio:0.3, rock:0.2, metal:1.0, gas:0.0, ice:0.0},
+    {sym:'Ni',Z:28,mass:58.693,family:'metal', condenseK:1353,density:8.91, bio:0.0, rock:0.0, metal:0.9, gas:0.0, ice:0.0},
+    {sym:'Cu',Z:29,mass:63.546,family:'metal', condenseK:1037,density:8.96, bio:0.1, rock:0.0, metal:0.8, gas:0.0, ice:0.0},
+    {sym:'Zn',Z:30,mass:65.38, family:'metal', condenseK:726, density:7.14, bio:0.1, rock:0.0, metal:0.7, gas:0.0, ice:0.0},
+    {sym:'Kr',Z:36,mass:83.798,family:'volatile', condenseK:116, density:0.0037, bio:0.0, rock:0.0, metal:0.0, gas:1.0, ice:0.0},
+    {sym:'Ag',Z:47,mass:107.868,family:'trace_heavy', condenseK:1235,density:10.49, bio:0.0, rock:0.0, metal:0.7, gas:0.0, ice:0.0},
+    {sym:'Sn',Z:50,mass:118.710,family:'trace_heavy', condenseK:704, density:7.31, bio:0.0, rock:0.0, metal:0.6, gas:0.0, ice:0.0},
+    {sym:'I', Z:53,mass:126.904,family:'volatile', condenseK:387, density:4.93, bio:0.3, rock:0.0, metal:0.0, gas:0.2, ice:0.4},
+    {sym:'Xe',Z:54,mass:131.293,family:'volatile', condenseK:161, density:0.0059, bio:0.0, rock:0.0, metal:0.0, gas:1.0, ice:0.0},
+    {sym:'W', Z:74,mass:183.84, family:'trace_heavy', condenseK:1780,density:19.25, bio:0.0, rock:0.0, metal:0.6, gas:0.0, ice:0.0},
+    {sym:'Au',Z:79,mass:196.967,family:'trace_heavy', condenseK:1340,density:19.30, bio:0.0, rock:0.0, metal:0.5, gas:0.0, ice:0.0},
+    {sym:'Pb',Z:82,mass:207.2, family:'trace_heavy', condenseK:600, density:11.34, bio:0.0, rock:0.0, metal:0.6, gas:0.0, ice:0.0},
+    {sym:'U', Z:92,mass:238.029,family:'radioactive', condenseK:1405,density:18.95, bio:0.0, rock:0.0, metal:0.5, gas:0.0, ice:0.0}
+  ];
+
+  const CONSTANTS = {
+    c_sim: 1.0,
+    k_exp: 0.00055,
+    p_exp: 1.12,
+    rho_origin: 1.0,
+    T_origin: 1.0,
+    g_sim: 0.023,
+    n_grav: 1.9,
+    eps_sing: 0.02,
+    alpha_t: 0.18,
+    totalEnergy: 1_000_000
+  };
+
+  let state = {seed:'', age:9.2, universe:null, selected:null, selectedRegionIndex:0, mode:'galaxy', anomalies:[], playing:false, atlas:[]};
+
+  function hashString(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h,16777619);} return h>>>0; }
+  function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ t>>>15, t|1); t ^= t + Math.imul(t ^ t>>>7, t|61); return ((t ^ t>>>14)>>>0)/4294967296; } }
+  function seeded(seed,key=''){ return mulberry32(hashString(seed+'|'+key)); }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
+  function fmt(n,d=2){ return Number(n).toFixed(d); }
+  function formatPct(v){ return (v*100).toFixed(1)+'%'; }
+
+
+  const AMU_KG = 1.66053906660e-27;
+  const EARTH_MASS_KG = 5.972e24;
+  const SOLAR_MASS_KG = 1.98847e30;
+  function fmtSci(n){
+    if(!isFinite(n) || n<=0) return '0';
+    if(n < 1e6) return n.toLocaleString(undefined,{maximumFractionDigits:0});
+    return n.toExponential(3).replace('e+','e');
+  }
+  function normalizeMap(map){
+    const sum = Object.values(map).reduce((a,b)=>a+b,0) || 1;
+    const out = {};
+    for(const k in map) out[k] = map[k]/sum;
+    return out;
+  }
+  function weightedMetalTemplate(){
+    const base={C:0.08,N:0.03,O:0.18,Ne:0.02,Mg:0.10,Si:0.12,S:0.06,Fe:0.16,Ni:0.05,Ca:0.04,Al:0.04,Na:0.02,P:0.02,Cl:0.01,K:0.01,Ti:0.02,Cr:0.01,Mn:0.01,Zn:0.01,Cu:0.005,U:0.002,Au:0.001};
+    return normalizeMap(base);
+  }
+  function starFractions(star){
+    const z = clamp(star.metallicity, 0.0001, 0.06);
+    const metals = weightedMetalTemplate();
+    const out = {H: clamp(0.74 - z*1.8, 0.58, 0.76), He: clamp(0.245 + z*0.5, 0.22, 0.34)};
+    const leftover = Math.max(0, 1 - out.H - out.He);
+    for(const k in metals) out[k] = (out[k]||0) + metals[k]*leftover;
+    return normalizeMap(out);
+  }
+  function estimateInventoryFromFractions(fractions, massKg){
+    const avgMass = Object.entries(fractions).reduce((a,[sym,frac])=>{
+      const el = ELEMENTS.find(e=>e.sym===sym);
+      return a + frac * (el ? el.mass : 1);
+    },0) || 1;
+    const totalAtoms = massKg / (avgMass * AMU_KG);
+    const counts = {};
+    for(const [sym, frac] of Object.entries(fractions)) counts[sym] = totalAtoms * frac;
+    return {totalAtoms, counts, avgMass};
+  }
+  function mergeInventories(invList){
+    const out = {totalAtoms:0, counts:{}};
+    for(const inv of invList){
+      if(!inv) continue;
+      out.totalAtoms += inv.totalAtoms || 0;
+      for(const [k,v] of Object.entries(inv.counts||{})) out.counts[k] = (out.counts[k]||0) + v;
+    }
+    return out;
+  }
+  function inventoryForSelection(sel){
+    if(!sel) return null;
+    if(sel.type==='planet'){
+      return estimateInventoryFromFractions(sel.fractions, sel.mass * EARTH_MASS_KG);
+    }
+    if(sel.type==='star'){
+      const starInv = estimateInventoryFromFractions(starFractions(sel), sel.mass * SOLAR_MASS_KG);
+      const planetInv = sel.planets.map(p=>estimateInventoryFromFractions(p.fractions, p.mass * EARTH_MASS_KG));
+      return mergeInventories([starInv, ...planetInv]);
+    }
+    if(sel.type==='galaxy'){
+      const invs = [];
+      for(const s of sel.stars){
+        invs.push(estimateInventoryFromFractions(starFractions(s), s.mass * SOLAR_MASS_KG));
+        for(const p of s.planets) invs.push(estimateInventoryFromFractions(p.fractions, p.mass * EARTH_MASS_KG));
+      }
+      return mergeInventories(invs);
+    }
+    return null;
+  }
+  function moleculeInventoryForRegion(p, region){
+    if(!p || p.type!=='planet' || !region) return null;
+    const atomSum = Object.values(region.counts||{}).reduce((a,b)=>a+b,0) || 1;
+    const frac = sym => ((region.counts&&region.counts[sym])||0)/atomSum;
+    const water = clamp(region.water * (frac('H')*0.9 + frac('O')*1.1) * 2.2, 0, 1);
+    const organics = clamp((frac('C')*1.2 + frac('H')*0.4 + frac('N')*0.5 + frac('O')*0.2 + frac('P')*0.2 + frac('S')*0.15) * (0.35 + p.chemistry.prebioticScore*0.95) * (0.55 + region.water*0.6), 0, 1);
+    const co2 = clamp((frac('C')*0.9 + frac('O')*0.9) * (0.35 + region.atmosphere*0.8), 0, 1);
+    const ammonia = clamp((frac('N')*1.0 + frac('H')*0.45) * (0.3 + region.water*0.7), 0, 1);
+    const methane = clamp((frac('C')*1.0 + frac('H')*0.55) * (0.25 + region.atmosphere*0.4 + region.water*0.2), 0, 1);
+    const silicates = clamp((frac('Si')*1.0 + frac('O')*0.6 + frac('Mg')*0.45 + frac('Al')*0.2 + frac('Ca')*0.2) * (0.4 + region.crust*0.8), 0, 1);
+    const metalOxides = clamp((frac('Fe')*0.9 + frac('O')*0.5 + frac('Ni')*0.3 + frac('Cr')*0.25) * (0.25 + region.crust*0.5 + region.heat*0.25), 0, 1);
+    const salts = clamp((frac('Na')*0.8 + frac('Cl')*0.9 + frac('K')*0.25) * (0.25 + water), 0, 1);
+    const molecules = normalizeMap({H2O:water, Organics:organics, CO2:co2, NH3:ammonia, CH4:methane, Silicates:silicates, MetalOxides:metalOxides, Salts:salts});
+    const reaction = {
+      activation: clamp((0.35 + region.heat*0.9) * p.chemistry.reactionWindow, 0, 1),
+      solvent: clamp(water, 0, 1),
+      polymerization: clamp((organics*0.75 + p.chemistry.persistenceWindow*0.25) * (0.55 + region.water*0.55), 0, 1),
+      mineralCatalysis: clamp((silicates*0.45 + metalOxides*0.45 + salts*0.1), 0, 1),
+      redox: clamp((metalOxides*0.55 + co2*0.25 + organics*0.2), 0, 1),
+      decayPressure: clamp(1 - p.chemistry.persistenceWindow*0.7 + region.heat*0.18, 0, 1)
+    };
+    const substrate = {
+      boundary: clamp((organics*0.45 + salts*0.15 + silicates*0.1 + water*0.2),0,1),
+      energyFlux: clamp((reaction.activation*0.45 + reaction.redox*0.35 + region.heat*0.2),0,1),
+      replicationWindow: clamp((reaction.polymerization*0.5 + reaction.solvent*0.25 + organics*0.25) * p.biosphere.replicationWindow,0,1),
+      persistence: clamp((1-reaction.decayPressure)*0.55 + water*0.2 + organics*0.25,0,1),
+      localLifeScore: 0
+    };
+    substrate.localLifeScore = clamp((substrate.boundary*0.25 + substrate.energyFlux*0.25 + substrate.replicationWindow*0.3 + substrate.persistence*0.2) * (0.4 + p.biosphere.biosphereScore*0.8), 0, 1);
+    return {molecules, reaction, substrate};
+  }
+
+  function moleculeInventoryForPlanet(p){
+    if(!p || p.type!=='planet') return null;
+    const organics = clamp((p.fractions.C*0.9 + p.fractions.H*0.35 + p.fractions.O*0.25 + p.fractions.N*0.35 + p.fractions.P*0.2 + p.fractions.S*0.2) * p.chemistry.prebioticScore * 1.6, 0, 1);
+    const water = clamp(p.waterProxy * (p.fractions.H*0.7 + p.fractions.O*0.8) * 1.4, 0, 1);
+    const co2 = clamp((p.fractions.C*0.7 + p.fractions.O*0.6) * (0.4 + p.atmosphere*0.6), 0, 1);
+    const ammonia = clamp((p.fractions.N*0.9 + p.fractions.H*0.4) * (0.5 + p.structure.volatile), 0, 1);
+    const methane = clamp((p.fractions.C*0.9 + p.fractions.H*0.5) * (0.5 + p.structure.volatile), 0, 1);
+    const silicates = clamp((p.fractions.Si + p.fractions.O*0.6 + p.fractions.Mg*0.4 + p.fractions.Al*0.2 + p.fractions.Ca*0.2) * 1.2, 0, 1);
+    const metalOxides = clamp((p.fractions.Fe*0.8 + p.fractions.O*0.4 + p.fractions.Ni*0.3 + p.fractions.Cr*0.2) * 1.1, 0, 1);
+    const salts = clamp((p.fractions.Na*0.7 + p.fractions.Cl*0.8 + p.fractions.K*0.3) * (0.5 + water), 0, 1);
+    const molecules = normalizeMap({H2O:water, Organics:organics, CO2:co2, NH3:ammonia, CH4:methane, Silicates:silicates, MetalOxides:metalOxides, Salts:salts});
+    const reaction = {
+      activation: clamp(p.chemistry.reactionWindow,0,1),
+      solvent: clamp(p.chemistry.solventWindow,0,1),
+      polymerization: clamp((organics*0.7 + p.chemistry.persistenceWindow*0.3),0,1),
+      mineralCatalysis: clamp((silicates*0.4 + metalOxides*0.5 + salts*0.1),0,1),
+      redox: clamp((metalOxides*0.5 + co2*0.3 + organics*0.2),0,1),
+      decayPressure: clamp(1 - p.chemistry.persistenceWindow*0.8,0,1)
+    };
+    return {molecules, reaction};
+  }
+
+  function compilePlanetAtomicAuthority(p){
+    if(!p || p.type!=='planet') return null;
+    const baseInv = estimateInventoryFromFractions(p.fractions, p.mass * EARTH_MASS_KG);
+    const reservoirs = { core:{}, mantle:{}, crust:{}, ocean:{}, atmosphere:{}, ice:{} };
+    const reservoirMix = { core:0, mantle:0, crust:0, ocean:0, atmosphere:0, ice:0 };
+    for(const el of ELEMENTS){
+      const frac = p.fractions[el.sym] || 0;
+      const heat = clamp((p.tempK-240)/1000, 0, 1);
+      const cold = clamp((260-p.tempK)/180, 0, 1);
+      const atmBias = clamp(el.gas*(0.65+p.atmosphere*0.6)*(1-0.35*p.gravity) + el.ice*0.08, 0, 1);
+      const oceanBias = clamp((el.sym==='H' || el.sym==='O' || el.sym==='Na' || el.sym==='Cl' || el.sym==='C' || el.sym==='N' || el.sym==='S') ? p.waterProxy*(0.3+el.bio*0.5) : 0, 0, 1);
+      const iceBias = clamp(el.ice*(0.35 + cold*0.9) * (0.2 + p.waterProxy*0.8), 0, 1);
+      const coreBias = clamp(el.metal*(0.45 + p.structure.core*1.2) + (el.sym==='S'?0.15:0) + (el.family==='radioactive'?0.08:0), 0, 1.4);
+      const mantleBias = clamp(el.rock*(0.45 + p.structure.mantle*0.8) + el.metal*0.08 + el.bio*0.04, 0, 1.2);
+      const crustBias = clamp(el.rock*(0.18 + (1-p.structure.core)*0.35) + el.bio*0.12 + (el.sym==='Si'||el.sym==='Al'||el.sym==='Ca'||el.sym==='K'||el.sym==='Na'?0.16:0), 0, 0.95);
+      const weights = { core:coreBias, mantle:mantleBias, crust:crustBias, ocean:oceanBias, atmosphere:atmBias, ice:iceBias };
+      const sumW = Object.values(weights).reduce((a,b)=>a+b,0) || 1;
+      const count = baseInv.counts[el.sym] || 0;
+      for(const k of Object.keys(weights)){
+        const c = count * (weights[k]/sumW);
+        reservoirs[k][el.sym] = c;
+        reservoirMix[k] += c;
+      }
+    }
+    return { totalAtoms: baseInv.totalAtoms, counts: baseInv.counts, reservoirs, reservoirMix };
+  }
+
+  function regionSeedMapForPlanet(seed,p){
+    if(!p || p.type!=='planet') return [];
+    const authority = compilePlanetAtomicAuthority(p);
+    const keys = ['equatorial_oceanic','equatorial_crustal','subduction_margin','cratonic_interior','polar_ice','upper_atmosphere'];
+    return keys.map((name,idx)=>{
+      const rr = seeded(seed, p.id+'|region|'+name);
+      const heat = clamp((idx<2?0.8:idx===4?0.15:0.45) * (0.5 + rr()*0.8) * clamp(p.tempK/350,0.2,1.7),0,1.6);
+      const water = clamp((idx===0?1:idx===4?0.7:idx===5?0.05:0.3) * (0.5 + rr()*0.9) * p.waterProxy,0,1);
+      const atmosphere = clamp((idx===5?1:0.3+rr()*0.5) * p.atmosphere,0,1);
+      const crust = clamp((idx===1||idx===3?1:idx===2?0.8:0.2) * (0.5+rr()*0.9),0,1);
+      const coreLeak = clamp((idx===2?0.12:0.03) * (0.5+rr()*0.8) * p.structure.core,0,0.2);
+      const local = {};
+      for(const el of ELEMENTS){
+        const base = p.fractions[el.sym] || 0;
+        const val = base * (
+          0.35 +
+          el.rock*crust*0.9 +
+          el.metal*coreLeak*1.8 +
+          el.gas*atmosphere*1.2 +
+          el.ice*water*0.8 +
+          el.bio*water*0.7 +
+          (el.sym==='H'||el.sym==='O'?water*0.9:0)
+        ) * (0.8 + rr()*0.4) * (1 - 0.15*heat + (el.family==='volatile'?0.08:0));
+        local[el.sym] = Math.max(0,val);
+      }
+      const norm = normalizeMap(local);
+      const regionAtoms = Object.fromEntries(Object.entries(norm).map(([sym,frac])=>[sym, frac * authority.totalAtoms * (0.06 + rr()*0.12)]));
+      return { name, heat, water, atmosphere, crust, top: Object.entries(regionAtoms).sort((a,b)=>b[1]-a[1]).slice(0,6), counts: regionAtoms };
+    });
+  }
+
+  function phaseForAge(age){
+    if(age < 0.15) return 'Plasma Expansion';
+    if(age < 0.8) return 'Density Growth';
+    if(age < 2.0) return 'First Stars';
+    if(age < 5.0) return 'Galaxy Assembly';
+    if(age < 8.5) return 'System Enrichment';
+    return 'Settled Systems';
+  }
+  function scaleFactor(age){ return 1 + CONSTANTS.k_exp*Math.pow(age*1000, CONSTANTS.p_exp); }
+  function observerDelay(distanceLY){ return distanceLY / CONSTANTS.c_sim; }
+  function localClockFactor(displacementPotential, velocityFrac){
+    const Cv = Math.sqrt(Math.max(0,1-velocityFrac*velocityFrac));
+    const Cg = 1 / (1 + CONSTANTS.alpha_t * displacementPotential);
+    return Cv * Cg;
+  }
+  function primordialBase(el){
+    if(el.sym==='H') return 0.74;
+    if(el.sym==='He') return 0.245;
+    if(el.sym==='C') return 0.003;
+    if(el.sym==='N') return 0.001;
+    if(el.sym==='O') return 0.006;
+    return 0.00002;
+  }
+
+  function generateUniverse(seed, age){
+    const rnd = seeded(seed, 'universe');
+    const scale = scaleFactor(age);
+    const galaxies = [];
+    const galaxyCount = 5 + Math.floor(rnd()*5);
+    let lifeCapableCount = 0;
+    let biosphereCount = 0;
+    for(let g=0; g<galaxyCount; g++){
+      const gr = seeded(seed, 'galaxy_'+g);
+      const phaseFactor = clamp((age-0.8)/7.5,0,1);
+      const radius = 90 + gr()*110;
+      const gx = lerp(-340,340,gr());
+      const gy = lerp(-220,220,gr());
+      const stars = [];
+      const starCount = Math.floor(120 + gr()*260*phaseFactor);
+      const metallicity = clamp(0.0005 + phaseFactor*(0.005 + gr()*0.04), 0, 0.055);
+      for(let s=0; s<starCount; s++){
+        const sr = seeded(seed, 'galaxy_'+g+'_star_'+s);
+        const ang = sr()*Math.PI*2;
+        const rad = Math.sqrt(sr())*radius;
+        const sx = gx + Math.cos(ang)*rad*(0.65+sr()*0.55);
+        const sy = gy + Math.sin(ang)*rad*(0.25+sr()*0.35);
+        const mass = 0.3 + sr()*9.5;
+        const birth = 0.7 + sr()*Math.max(0.2, age*0.85);
+        if(age < birth) continue;
+        const enriched = clamp((age - birth)/(0.5 + mass*0.25), 0, 1);
+        const starMetallicity = metallicity + enriched * (0.002 + sr()*0.015);
+        const system = generateSystem(seed, `g${g}s${s}`, age, mass, starMetallicity, sx, sy);
+        lifeCapableCount += system.lifeCapableCount;
+        biosphereCount += system.biosphereCount;
+        stars.push(system.star);
+      }
+      galaxies.push({type:'galaxy', id:`G-${g+1}`, x:gx, y:gy, radius, metallicity, stars});
+    }
+    const ageRatio = clamp(age/13.8,0,1);
+    const energy = {
+      radiation: CONSTANTS.totalEnergy*(0.20 + ageRatio*0.11),
+      thermal:   CONSTANTS.totalEnergy*(0.14 - ageRatio*0.03),
+      binding:   CONSTANTS.totalEnergy*(0.08 + ageRatio*0.10),
+      motion:    CONSTANTS.totalEnergy*(0.15 + ageRatio*0.01),
+      field:     CONSTANTS.totalEnergy*(0.23 - ageRatio*0.06),
+      massProxy: CONSTANTS.totalEnergy*(0.20 - ageRatio*0.13)
+    };
+    const sum = Object.values(energy).reduce((a,b)=>a+b,0);
+    energy.massProxy += CONSTANTS.totalEnergy - sum;
+    return {seed, age, scale, galaxies, energy, lifeCapableCount, biosphereCount};
+  }
+
+  function generateSystem(seed, id, age, starMass, metallicity, x, y){
+    const r = seeded(seed, id);
+    const luminosity = starMass ** 3.1;
+    const diskMass = Math.max(0.01, metallicity * (0.8 + r()*2.2) * starMass);
+    const birthEpoch = Math.max(0.4, age*(0.08+r()*0.65));
+    const planetCount = Math.floor(clamp(diskMass*90, 1, 9));
+    let lifeCapableCount = 0;
+    let biosphereCount = 0;
+    const planets = [];
+    for(let p=0; p<planetCount; p++){
+      const planet = generatePlanet(seed, id+'_p'+p, age, starMass, metallicity, diskMass, p, luminosity);
+      if(planet.lifeCapable) lifeCapableCount++;
+      if(planet.biosphere.biosphereCapable) biosphereCount++;
+      planets.push(planet);
+    }
+    const star = {type:'star', id:'S-'+id, x, y, mass:starMass, luminosity, metallicity, diskMass, birthEpoch, planets,
+      radius:2 + Math.sqrt(starMass)*1.2, yieldsProfile:metallicity*starMass,
+      lineage:`seed:${seed} → galaxy/system:${id} → star`};
+    planets.forEach(p=>{ p.parentStar = star; });
+    return {star, lifeCapableCount, biosphereCount};
+  }
+
+  function radialTemp(starMass, orbitAU){
+    const inner = 1550 * Math.pow(starMass, 0.65);
+    return inner / (1 + 0.55*Math.pow(orbitAU, 0.72));
+  }
+  function condensationFactor(el, tempK){ return clamp((el.condenseK - tempK)/Math.max(1,el.condenseK), 0, 1); }
+
+  function chemistryThresholds(tempK, gravity, waterProxy, atmosphere, fractions, volatile, age){
+    const solventWindow = clamp(1 - Math.abs(tempK - 288)/150, 0, 1) * waterProxy;
+    const pressureWindow = clamp(1 - Math.abs((atmosphere*gravity*10)-6)/10, 0, 1);
+    const prebioticFeedstock = clamp((fractions.C + fractions.N + fractions.O + fractions.P + fractions.S) * 3.8, 0, 1);
+    const energyGradient = clamp((Math.abs(tempK-220)/280) * 0.4 + volatile*0.6, 0, 1);
+    const chemistryWindow = clamp(solventWindow*0.35 + pressureWindow*0.15 + prebioticFeedstock*0.30 + energyGradient*0.20, 0, 1);
+    const persistenceWindow = clamp((1 - Math.abs(tempK-295)/220) * 0.5 + atmosphere*0.25 + gravity*0.15 + waterProxy*0.10, 0, 1);
+    const reactionWindow = clamp(chemistryWindow*0.65 + energyGradient*0.35, 0, 1);
+    const prebioticScore = clamp(chemistryWindow*0.40 + persistenceWindow*0.30 + reactionWindow*0.20 + clamp(age/10,0,1)*0.10, 0, 1);
+    const lifeCapable = chemistryWindow > 0.55 && persistenceWindow > 0.45 && prebioticScore > 0.52;
+    return {solventWindow, pressureWindow, prebioticFeedstock, energyGradient, chemistryWindow, persistenceWindow, reactionWindow, prebioticScore, lifeCapable};
+  }
+
+  function biosphereThresholds(seed, id, chemistry, habitability, tempK, gravity, atmosphere, waterProxy, age){
+    const r = seeded(seed, id+'|biosphere')();
+    const ageFactor = clamp((age-6.0)/7.8, 0, 1);
+    const solventStability = clamp(chemistry.solventWindow*0.45 + chemistry.persistenceWindow*0.35 + waterProxy*0.20, 0, 1);
+    const metabolismWindow = clamp(chemistry.energyGradient*0.45 + chemistry.reactionWindow*0.35 + atmosphere*0.20, 0, 1);
+    const replicationWindow = clamp(chemistry.prebioticScore*0.45 + chemistry.persistenceWindow*0.25 + habitability*0.20 + ageFactor*0.10, 0, 1);
+    const ecologyWindow = clamp(habitability*0.35 + gravity*0.10 + chemistry.solventWindow*0.20 + ageFactor*0.35, 0, 1);
+    const biosphereScore = clamp(solventStability*0.25 + metabolismWindow*0.25 + replicationWindow*0.30 + ecologyWindow*0.20, 0, 1);
+    let stage = 'sterile';
+    if(biosphereScore > 0.44) stage = 'prebiotic';
+    if(biosphereScore > 0.58 && chemistry.lifeCapable) stage = 'microbial';
+    if(biosphereScore > 0.72 && chemistry.lifeCapable && age > 9.0) stage = 'complex';
+    if(biosphereScore > 0.84 && chemistry.lifeCapable && age > 11.5) stage = 'ecological';
+    const biosphereCapable = stage !== 'sterile';
+    return {solventStability, metabolismWindow, replicationWindow, ecologyWindow, biosphereScore, stage, biosphereCapable, diversityProxy: clamp((biosphereScore*0.7 + r*0.3),0,1)};
+  }
+
+  function generatePlanet(seed, id, age, starMass, metallicity, diskMass, index){
+    const r = seeded(seed, id);
+    const orbitAU = 0.24 + index*0.65 + r()*0.45 + Math.pow(index+1,1.1)*0.12;
+    const tempK = radialTemp(starMass, orbitAU);
+    const feedingZone = 0.12 + orbitAU*0.22;
+    const seedMass = (0.2 + r()*3.8) * clamp(diskMass*20,0.2,9.5) / (1 + orbitAU*0.15);
+    const gravity = clamp(0.35 + seedMass*0.22, 0.1, 3.6);
+    const volatileEscape = clamp((tempK/1600) * (1/gravity), 0, 1.2);
+    const fractions = {};
+    let total = 0;
+
+    for(const el of ELEMENTS){
+      const re = seeded(seed, id+'|'+el.sym)();
+      const base = primordialBase(el);
+      const enrichment = metallicity * (0.5 + re*1.7) * ((['metal','rock_former','prebiotic','trace_heavy','radioactive'].includes(el.family)) ? 1 : 0.18);
+      const cond = condensationFactor(el, tempK);
+      const familyBias = el.rock*clamp(1/(1+tempK/1400),0,1) + el.metal*clamp(1/(1+tempK/1800),0,1) + el.gas*clamp(tempK/500,0,1) + el.ice*clamp((240-tempK)/240,0,1);
+      const capture = (base*0.06 + enrichment + cond*(0.02+familyBias*0.18)) * (0.8 + re*0.6) * (0.7 + feedingZone*0.3);
+      const loss = (el.gas*0.18 + el.ice*0.10 + (el.family==='volatile'?0.06:0)) * volatileEscape;
+      const val = Math.max(0, capture - loss + (el.bio>0 ? metallicity*0.03*re : 0));
+      fractions[el.sym] = val;
+      total += val;
+    }
+    for(const k in fractions) fractions[k] /= total || 1;
+
+    const core = clamp((fractions.Fe + fractions.Ni + fractions.Cr + fractions.Mn + fractions.W + fractions.U)*1.8, 0.05, 0.62);
+    const mantle = clamp((fractions.O + fractions.Mg + fractions.Si + fractions.Al + fractions.Ca + fractions.Na + fractions.K)*1.7, 0.15, 0.8);
+    const volatile = clamp((fractions.H + fractions.He + fractions.N + fractions.Ne + fractions.Cl + fractions.Ar + fractions.Kr + fractions.Xe)*1.4, 0, 0.94);
+    const waterProxy = clamp((fractions.H + fractions.O*0.6 + fractions.C*0.1) * clamp((320-tempK)/320,0,1) * gravity, 0, 1);
+    const atmosphere = clamp(volatile * gravity * clamp((1500-tempK)/1500,0.08,1), 0, 1);
+    const pressureBand = atmosphere * gravity * 10;
+    const habitability = habitabilityScore(tempK, gravity, waterProxy, atmosphere, fractions);
+    const chemistry = chemistryThresholds(tempK, gravity, waterProxy, atmosphere, fractions, volatile, age);
+    const biosphere = biosphereThresholds(seed, id, chemistry, habitability, tempK, gravity, atmosphere, waterProxy, age);
+    const type = classifyPlanet(tempK, gravity, volatile, core, waterProxy);
+
+    return {
+      type:'planet', id:'P-'+id, orbitAU, tempK, feedingZone, mass:seedMass, gravity,
+      radius: clamp(Math.pow(seedMass,0.32)*4.8, 2, 24), fractions,
+      structure:{core, mantle, volatile}, waterProxy, atmosphere, pressureBand,
+      habitability, chemistry, biosphere, lifeCapable:chemistry.lifeCapable, label:type,
+      birthEpoch: clamp(age*(0.25+r()*0.4), 0.8, age), lineage:`seed:${seed} → system:${id} → disk → accretion`, x:0, y:0
+    };
+  }
+
+  function classifyPlanet(tempK, gravity, volatile, core, waterProxy){
+    if(volatile > 0.72 && gravity > 1.3) return 'Gas / Ice Giant';
+    if(waterProxy > 0.32 && gravity > 0.6 && tempK > 220 && tempK < 340) return 'Ocean / Temperate World';
+    if(core > 0.45 && volatile < 0.18) return 'Metal-Rich Rocky';
+    if(tempK < 180 && volatile > 0.28) return 'Cold Volatile World';
+    return 'Rocky World';
+  }
+  function habitabilityScore(tempK, gravity, waterProxy, atmosphere, fractions){
+    const tempScore = 1 - clamp(Math.abs(tempK-288)/240, 0, 1);
+    const gravScore = 1 - clamp(Math.abs(gravity-1.0)/1.4, 0, 1);
+    const bioScore = clamp((fractions.C + fractions.N + fractions.O + fractions.P + fractions.S)*3.5, 0, 1);
+    return clamp(0.35*tempScore + 0.2*gravScore + 0.25*waterProxy + 0.1*atmosphere + 0.1*bioScore, 0, 1);
+  }
+
+  function flattenAtlas(universe){
+    const out = [];
+    for(const g of universe.galaxies){
+      out.push({kind:'galaxy', id:g.id, label:`${g.id} • ${g.stars.length} stars`, obj:g});
+      for(const s of g.stars.slice(0,18)){
+        out.push({kind:'star', id:s.id, label:`${s.id} • M ${fmt(s.mass,2)} • ${s.planets.length} planets`, obj:s});
+        for(const p of s.planets.slice(0,5)) out.push({kind:'planet', id:p.id, label:`${p.id} • ${p.label}${p.biosphere.biosphereCapable ? ' • '+p.biosphere.stage : (p.lifeCapable ? ' • life-capable' : '')}`, obj:p});
+      }
+    }
+    return out;
+  }
+
+  function collectAnomalies(universe, selected, seed){
+    const anomalies = [];
+    const e = universe.energy;
+    const delta = Object.values(e).reduce((a,b)=>a+b,0) - CONSTANTS.totalEnergy;
+    if(Math.abs(delta) > 0.001) anomalies.push(receipt(seed,'energy','critical','universe','global',`Energy drift ${delta.toFixed(6)}`,'ΔE_total = 0 violated'));
+    if(selected && selected.type==='planet'){
+      const sumFrac = Object.values(selected.fractions).reduce((a,b)=>a+b,0);
+      if(Math.abs(sumFrac-1) > 0.0001) anomalies.push(receipt(seed,'matter','high',selected.id,'planet',`Element fractions sum ${sumFrac.toFixed(5)}`,'Planet fractions must normalize to 1'));
+      if(selected.fractions.Fe + selected.fractions.Ni > 0.92) anomalies.push(receipt(seed,'matter','medium',selected.id,'planet','Extreme metal dominance','Check disk temperature and loss pipeline'));
+      if(selected.habitability > 0.8 && (selected.waterProxy < 0.1 || selected.atmosphere < 0.1)) anomalies.push(receipt(seed,'chemistry','medium',selected.id,'planet','Habitability too high for low solvent/atmosphere','Check habitability weighting envelope'));
+      if(selected.chemistry.lifeCapable && selected.chemistry.reactionWindow < 0.30) anomalies.push(receipt(seed,'chemistry','high',selected.id,'planet','Life-capable tag without strong reaction window','Check chemistry threshold gating'));
+      if(selected.biosphere.biosphereCapable && !selected.chemistry.lifeCapable) anomalies.push(receipt(seed,'biosphere','high',selected.id,'planet','Biosphere stage without chemistry life threshold','Check biosphere gating source'));
+      if(selected.biosphere.stage==='ecological' && selected.atmosphere < 0.08) anomalies.push(receipt(seed,'biosphere','medium',selected.id,'planet','Ecological stage on ultra-thin atmosphere','Check persistence / ecology balance'));
+      const mol = moleculeInventoryForPlanet(selected);
+      if(mol.molecules.H2O > 0.18 && selected.waterProxy < 0.08) anomalies.push(receipt(seed,'chemistry','medium',selected.id,'planet','Water-rich molecule envelope with low water proxy','Check solvent inventory coupling'));
+      if((mol.molecules.Organics > 0.2 || mol.reaction.polymerization > 0.4) && selected.chemistry.prebioticFeedstock < 0.15) anomalies.push(receipt(seed,'chemistry','high',selected.id,'planet','Organic inventory outruns elemental feedstock','Check molecule derivation from atom pools'));
+      const auth = compilePlanetAtomicAuthority(selected);
+      if(auth && ((auth.reservoirMix.core||0) <= 0 || (auth.reservoirMix.mantle||0) <= 0)) anomalies.push(receipt(seed,'matter','medium',selected.id,'planet','Reservoir under-allocation detected','Check latent atomic reservoir compiler'));
+      if(auth && (auth.reservoirs.atmosphere.H||0) > auth.totalAtoms*0.7) anomalies.push(receipt(seed,'matter','medium',selected.id,'planet','Atmosphere captures excessive hydrogen share','Check volatile retention and reservoir routing'));
+      const observerDist = (state.mode==='planet' || state.mode==='truth') ? selected.orbitAU*0.0000158 : 1200;
+      const delay = observerDelay(observerDist);
+      if(delay < 0) anomalies.push(receipt(seed,'causality','critical',selected.id,'observer','Negative visibility delay','Observer cannot see future state'));
+    }
+    return anomalies;
+  }
+
+  function receipt(seed, cls, severity, region, scope, actual, violated){
+    const base = `${seed}|${cls}|${severity}|${region}|${scope}|${actual}|${violated}`;
+    return {id:`ANOM-${hashString(base).toString(16).padStart(8,'0')}`, cls, severity, region, scope, actual, violated};
+  }
+
+  function updateUniverse(){
+    state.seed = seedInput.value.trim() || 'GARY-UNIVERSE-001';
+    state.age = ageSlider.value / 100;
+    state.mode = modeSelect.value;
+    state.universe = generateUniverse(state.seed, state.age);
+    state.atlas = flattenAtlas(state.universe);
+    if(!state.selected || !state.atlas.find(x => x.id === state.selected.id)) state.selected = state.atlas.find(x=>x.kind==='planet')?.obj || state.atlas[0]?.obj || null;
+    state.anomalies = collectAnomalies(state.universe, state.selected, state.seed);
+    renderAtlas(state.atlas);
+    renderInfo();
+    draw();
+  }
+
+  function renderAtlas(items){
+    atlasList.innerHTML = '';
+    items.slice(0,60).forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'item' + ((state.selected && state.selected.id===entry.id) ? ' active' : '');
+      div.innerHTML = `<div style="font-weight:700;font-size:13px">${entry.label}</div><div class="note">${entry.kind}</div>`;
+      div.onclick = () => {
+        state.selected = entry.obj;
+        if(entry.kind==='galaxy') modeSelect.value='galaxy';
+        if(entry.kind==='star') modeSelect.value='system';
+        if(entry.kind==='planet') modeSelect.value='planet';
+        state.mode = modeSelect.value;
+        state.anomalies = collectAnomalies(state.universe, state.selected, state.seed);
+        renderInfo();
+        draw();
+        renderAtlas(items);
+      };
+      atlasList.appendChild(div);
+    });
+  }
+
+  function renderInfo(){
+    const u = state.universe;
+    const sel = state.selected;
+    document.getElementById('epochLabel').textContent = fmt(state.age,2) + ' Gyr';
+    document.getElementById('phaseLabel').textContent = phaseForAge(state.age);
+    document.getElementById('phaseBadge').textContent = phaseForAge(state.age);
+    document.getElementById('selectionBadge').textContent = sel ? sel.id : 'none';
+    document.getElementById('scaleFactor').textContent = fmt(u.scale, 3);
+    document.getElementById('lifeCount').textContent = String(u.lifeCapableCount);
+    document.getElementById('biosphereCount').textContent = String(u.biosphereCount);
+    document.getElementById('atlasCount').textContent = String(state.atlas.length);
+    const fieldCount = state.universe.galaxies.reduce((a,g)=>a + 1 + g.stars.length + g.stars.reduce((b,s)=>b+s.planets.length,0),0);
+    document.getElementById('atomicFieldCount').textContent = String(fieldCount);
+    document.getElementById('reservoirCount').textContent = sel && sel.type==='planet' ? '6' : (sel && sel.type==='star' ? String(sel.planets.length*6) : String(state.universe.galaxies.length));
+
+    const delay = sel && sel.type==='planet' ? observerDelay(sel.orbitAU*0.0000158) : (sel && sel.type==='star' ? observerDelay(0.01) : observerDelay(1200));
+    document.getElementById('lightDelay').textContent = delay < 0.001 ? (delay*1e6).toFixed(2)+' yr' : delay.toFixed(2)+' kyr';
+    document.getElementById('observerDistance').textContent = sel && sel.type==='planet' ? fmt(sel.orbitAU*0.0000158,6)+' ly' : (sel && sel.type==='star' ? '0.0100 ly' : '1200 ly');
+
+    const displacement = sel && sel.type==='planet' ? (sel.mass/(Math.pow(sel.radius*0.08, CONSTANTS.n_grav)+CONSTANTS.eps_sing))*0.04 : 0.02;
+    const clock = localClockFactor(displacement, sel && sel.type==='planet' ? clamp(sel.orbitAU/100,0,0.2):0.01);
+    document.getElementById('clockFactor').textContent = fmt(clock, 4);
+
+    const e = u.energy;
+    [['eRad','radiation'],['eTherm','thermal'],['eBind','binding'],['eMove','motion'],['eField','field'],['eMass','massProxy']].forEach(([id,k]) => {
+      document.getElementById(id).textContent = fmt(e[k],1);
+    });
+    const delta = Object.values(e).reduce((a,b)=>a+b,0) - CONSTANTS.totalEnergy;
+    const eDelta = document.getElementById('eDelta');
+    eDelta.textContent = fmt(delta,4);
+    eDelta.className = 'v ' + (Math.abs(delta)<0.001 ? 'good' : 'bad');
+    document.getElementById('energyState').textContent = Math.abs(delta)<0.001 ? 'Balanced' : 'Drift';
+    document.getElementById('energyState').className = 'v ' + (Math.abs(delta)<0.001 ? 'good' : 'bad');
+    document.getElementById('anomalyCount').textContent = String(state.anomalies.length);
+
+    renderSelection(sel, clock, displacement);
+    renderAnomalies();
+    renderElementTable();
+  }
+
+  function renderSelection(sel, clock, displacement){
+    if(!sel){ selectionDetails.innerHTML = '<div class="note">No selection</div>'; atomSummary.innerHTML=''; elementBars.innerHTML=''; reservoirBars.innerHTML=''; regionAtoms.innerHTML=''; regionMolecules.innerHTML=''; moleculeBars.innerHTML=''; chemistryBars.innerHTML=''; return; }
+    let html = '';
+    const inventory = inventoryForSelection(sel);
+    const topAtoms = inventory ? Object.entries(inventory.counts).sort((a,b)=>b[1]-a[1]).slice(0,8) : [];
+    const distinctCount = inventory ? Object.values(inventory.counts).filter(v=>v>0).length : 0;
+    if(sel.type==='planet'){
+      html += `
+      <div class="kv"><div class="k">ID</div><div class="v">${sel.id}</div></div>
+      <div class="kv"><div class="k">Class</div><div class="v">${sel.label}</div></div>
+      <div class="kv"><div class="k">Orbit</div><div class="v">${fmt(sel.orbitAU,2)} AU</div></div>
+      <div class="kv"><div class="k">Mass</div><div class="v">${fmt(sel.mass,2)} M⊕-proxy</div></div>
+      <div class="kv"><div class="k">Gravity</div><div class="v">${fmt(sel.gravity,2)} g-proxy</div></div>
+      <div class="kv"><div class="k">Temperature</div><div class="v">${fmt(sel.tempK,1)} K</div></div>
+      <div class="kv"><div class="k">Atmosphere</div><div class="v">${formatPct(sel.atmosphere)}</div></div>
+      <div class="kv"><div class="k">Water Proxy</div><div class="v">${formatPct(sel.waterProxy)}</div></div>
+      <div class="kv"><div class="k">Habitability</div><div class="v ${sel.habitability>0.55?'good':'warn'}">${formatPct(sel.habitability)}</div></div>
+      <div class="kv"><div class="k">Life Threshold</div><div class="v ${sel.lifeCapable?'good':'warn'}">${sel.lifeCapable ? 'Candidate' : 'Not Yet'}</div></div>
+      <div class="kv"><div class="k">Biosphere Stage</div><div class="v ${sel.biosphere.biosphereCapable?'good':'warn'}">${sel.biosphere.stage}</div></div>
+      <div class="kv"><div class="k">Biosphere Score</div><div class="v ${sel.biosphere.biosphereScore>0.58?'good':'warn'}">${formatPct(sel.biosphere.biosphereScore)}</div></div>
+      <div class="kv"><div class="k">Clock Factor</div><div class="v">${fmt(clock,4)}</div></div>
+      <div class="kv"><div class="k">Displacement</div><div class="v">${fmt(displacement,4)}</div></div>
+      <div class="note">${sel.lineage}</div>`;
+      const top = Object.entries(sel.fractions).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      elementBars.innerHTML = top.map(([sym,val])=>`<div><div class="row" style="justify-content:space-between"><span>${sym}</span><span class="note">${formatPct(val)}</span></div><div class="bar"><span style="width:${val*100}%"></span></div></div>`).join('');
+      const regions = regionSeedMapForPlanet(state.seed, sel);
+      const region = regions[Math.max(0, Math.min(state.selectedRegionIndex, regions.length-1))] || regions[0];
+      state.selectedRegionIndex = Math.max(0, Math.min(state.selectedRegionIndex, Math.max(0, regions.length-1)));
+      regionAtoms.innerHTML = regions.map((r,idx)=>`<div class="item ${idx===state.selectedRegionIndex?'active':''}" data-region-idx="${idx}"><div class="row" style="justify-content:space-between"><strong>${r.name.replaceAll('_',' ')}</strong><span class="note">heat ${formatPct(clamp(r.heat/1.6,0,1))}</span></div><div class="note">water ${formatPct(r.water)} • atmosphere ${formatPct(r.atmosphere)} • crust ${formatPct(r.crust)}</div><div class="note" style="margin-top:6px">${r.top.map(([sym,count])=>`${sym} ${fmtSci(count)}`).join(' • ')}</div></div>`).join('');
+      regionAtoms.querySelectorAll('[data-region-idx]').forEach(el=>el.onclick=()=>{ state.selectedRegionIndex = Number(el.dataset.regionIdx)||0; updateUI(); draw(); });
+      const localChem = moleculeInventoryForRegion(sel, region);
+      regionMolecules.innerHTML = `<div class="item active"><div class="row" style="justify-content:space-between"><strong>${region.name.replaceAll('_',' ')}</strong><span class="badge ${localChem.substrate.localLifeScore>0.55?'good':localChem.substrate.localLifeScore>0.35?'warn':'bad'}">local life ${formatPct(localChem.substrate.localLifeScore)}</span></div><div class="note">Atoms are present in this region in latent authority; molecules and substrate are resolved from those atom pools on demand.</div></div>` + Object.entries(localChem.molecules).sort((a,b)=>b[1]-a[1]).map(([label,val])=>`<div><div class="row" style="justify-content:space-between"><span>${label}</span><span class="note">${formatPct(val)}</span></div><div class="bar"><span style="width:${val*100}%"></span></div></div>`).join('') + '<div class="note" style="margin-top:8px">Local reaction / substrate</div>' + [['Activation',localChem.reaction.activation],['Solvent',localChem.reaction.solvent],['Polymerization',localChem.reaction.polymerization],['Mineral Catalysis',localChem.reaction.mineralCatalysis],['Redox',localChem.reaction.redox],['Decay Pressure',localChem.reaction.decayPressure],['Boundary',localChem.substrate.boundary],['Energy Flux',localChem.substrate.energyFlux],['Replication',localChem.substrate.replicationWindow],['Persistence',localChem.substrate.persistence]].map(([label,val])=>`<div><div class="row" style="justify-content:space-between"><span>${label}</span><span class="note">${formatPct(val)}</span></div><div class="bar"><span style="width:${val*100}%"></span></div></div>`).join('');
+      const c = sel.chemistry;
+      const b = sel.biosphere;
+      const chemRows = [
+        ['Chemistry Window', c.chemistryWindow],
+        ['Persistence Window', c.persistenceWindow],
+        ['Reaction Window', c.reactionWindow],
+        ['Prebiotic Feedstock', c.prebioticFeedstock],
+        ['Solvent Window', c.solventWindow],
+        ['Energy Gradient', c.energyGradient],
+        ['Prebiotic Score', c.prebioticScore],
+        ['Biosphere Score', b.biosphereScore],
+        ['Replication Window', b.replicationWindow],
+        ['Ecology Window', b.ecologyWindow]
+      ];
+      chemistryBars.innerHTML = chemRows.map(([label,val])=>`<div><div class="row" style="justify-content:space-between"><span>${label}</span><span class="note">${formatPct(val)}</span></div><div class="bar"><span style="width:${val*100}%"></span></div></div>`).join('');
+      const mol = moleculeInventoryForPlanet(sel);
+      moleculeBars.innerHTML = Object.entries(mol.molecules).sort((a,b)=>b[1]-a[1]).map(([label,val])=>`<div><div class="row" style="justify-content:space-between"><span>${label}</span><span class="note">${formatPct(val)}</span></div><div class="bar"><span style="width:${val*100}%"></span></div></div>`).join('') + '<div class="note" style="margin-top:8px">Reaction budget</div>' + Object.entries(mol.reaction).map(([label,val])=>`<div><div class="row" style="justify-content:space-between"><span>${label}</span><span class="note">${formatPct(val)}</span></div><div class="bar"><span style="width:${val*100}%"></span></div></div>`).join('');
+    } else if(sel.type==='star'){
+      html += `
+      <div class="kv"><div class="k">ID</div><div class="v">${sel.id}</div></div>
+      <div class="kv"><div class="k">Mass</div><div class="v">${fmt(sel.mass,2)} M☉-proxy</div></div>
+      <div class="kv"><div class="k">Metallicity</div><div class="v">${fmt(sel.metallicity,4)}</div></div>
+      <div class="kv"><div class="k">Disk Mass</div><div class="v">${fmt(sel.diskMass,3)}</div></div>
+      <div class="kv"><div class="k">Planets</div><div class="v">${sel.planets.length}</div></div>
+      <div class="kv"><div class="k">Life-capable Planets</div><div class="v">${sel.planets.filter(p=>p.lifeCapable).length}</div></div>
+      <div class="kv"><div class="k">Biosphere Worlds</div><div class="v">${sel.planets.filter(p=>p.biosphere.biosphereCapable).length}</div></div>
+      <div class="note">${sel.lineage}</div>`;
+      const sf = starFractions(sel);
+      const top = Object.entries(sf).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      elementBars.innerHTML = top.map(([sym,val])=>`<div><div class="row" style="justify-content:space-between"><span>${sym}</span><span class="note">${formatPct(val)}</span></div><div class="bar"><span style="width:${val*100}%"></span></div></div>`).join('');
+      regionAtoms.innerHTML = '<div class="note">Local region atomic maps are resolved at planet scale.</div>';
+      regionMolecules.innerHTML = '<div class="note">Local chemistry is resolved at planet scale after selecting a planet.</div>';
+      moleculeBars.innerHTML = '<div class="note">Molecule inventory is resolved at planet scale. System view aggregates star + planet atoms and supports drilldown to planet chemistry.</div>';
+      chemistryBars.innerHTML = '<div class="note">Select a planet for chemistry thresholds and biosphere windows.</div>';
+    } else {
+      html += `<div class="kv"><div class="k">ID</div><div class="v">${sel.id}</div></div><div class="kv"><div class="k">Stars</div><div class="v">${sel.stars.length}</div></div><div class="kv"><div class="k">Life-capable Worlds</div><div class="v">${sel.stars.reduce((a,s)=>a+s.planets.filter(p=>p.lifeCapable).length,0)}</div></div><div class="kv"><div class="k">Biosphere Worlds</div><div class="v">${sel.stars.reduce((a,s)=>a+s.planets.filter(p=>p.biosphere.biosphereCapable).length,0)}</div></div><div class="note">Galaxy selection active. Drill into a star or planet for detailed chemistry and biosphere inspection.</div>`;
+      elementBars.innerHTML = '<div class="note">Galaxy view shows aggregate atom inventory below; drill into stars or planets for local fractions.</div>';
+      regionAtoms.innerHTML = '<div class="note">Local region atomic maps are only resolved at planet scale.</div>';
+      regionMolecules.innerHTML = '<div class="note">Local chemistry is only resolved at planet scale.</div>';
+      moleculeBars.innerHTML = '<div class="note">Molecule inventory is only resolved at planet scale.</div>';
+      chemistryBars.innerHTML = '<div class="note">Select a planet for chemistry thresholds.</div>';
+    }
+    atomSummary.innerHTML = inventory ? `<div class="kv"><div class="k">Total Atoms</div><div class="v">${fmtSci(inventory.totalAtoms)}</div></div><div class="kv"><div class="k">Distinct Elements</div><div class="v">${distinctCount}</div></div>` + topAtoms.map(([sym,count])=>{ const share = count/(inventory.totalAtoms||1); return `<div><div class="row" style="justify-content:space-between"><span>${sym}</span><span class="note">${fmtSci(count)} • ${formatPct(share)}</span></div><div class="bar"><span style="width:${share*100}%"></span></div></div>`; }).join('') : '<div class="note">No atom inventory available.</div>';
+    selectionDetails.innerHTML = html;
+  }
+
+  function renderAnomalies(){
+    anomalyList.innerHTML = '';
+    if(state.anomalies.length===0){ anomalyList.innerHTML = '<div class="item"><div class="good" style="font-weight:700">No anomalies in current envelope</div><div class="note">Expected state matches current source contracts.</div></div>'; return; }
+    state.anomalies.forEach(a => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      const sevClass = a.severity==='critical' ? 'bad' : a.severity==='high' ? 'warn' : 'good';
+      div.innerHTML = `<div class="row" style="justify-content:space-between"><strong>${a.cls.toUpperCase()}</strong><span class="badge ${sevClass}">${a.severity}</span></div><div class="note">ID: ${a.id}</div><div class="note">Region: ${a.region} • Scope: ${a.scope}</div><div style="font-size:13px;margin-top:6px">${a.actual}</div><div class="note" style="margin-top:6px">Violated: ${a.violated}</div>`;
+      anomalyList.appendChild(div);
+    });
+  }
+
+  function renderElementTable(){
+    elementTable.innerHTML = '<div class="head">Element</div><div class="head">Seed Authority</div>' + ELEMENTS.slice(0,20).map(el => `<div>${el.sym} • Z${el.Z}</div><div>${el.family} • condense ${el.condenseK}K</div>`).join('');
+  }
+
+  function fitCanvas(){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.floor(rect.width*dpr);
+    canvas.height = Math.floor(rect.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function draw(){
+    fitCanvas();
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = '#030811'; ctx.fillRect(0,0,w,h);
+    drawStarfield(w,h);
+    if(state.mode==='galaxy') drawGalaxyView(w,h);
+    else if(state.mode==='system') drawSystemView(w,h);
+    else if(state.mode==='planet') drawPlanetView(w,h,false);
+    else drawPlanetView(w,h,true);
+  }
+
+  function drawStarfield(w,h){
+    const r = seeded(state.seed, 'bg');
+    for(let i=0;i<280;i++){
+      const x = r()*w, y = r()*h, a = 0.15 + r()*0.55, s = r()*1.8;
+      ctx.fillStyle = `rgba(230,245,255,${a})`;
+      ctx.fillRect(x,y,s,s);
+    }
+  }
+  function projectUniverseXY(x,y,w,h){ return {x:w*0.5 + x*0.9, y:h*0.5 + y*0.9}; }
+
+  function drawGalaxyView(w,h){
+    state.universe.galaxies.forEach(g => {
+      const p = projectUniverseXY(g.x,g.y,w,h);
+      const grad = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,Math.max(25,g.radius*0.65));
+      grad.addColorStop(0,'rgba(152,134,255,0.22)'); grad.addColorStop(1,'rgba(121,231,255,0.01)');
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(25,g.radius*0.65),0,Math.PI*2); ctx.fill();
+      for(const s of g.stars){
+        const sp = projectUniverseXY(s.x,s.y,w,h);
+        const b = clamp(0.35 + s.mass/10,0.3,1);
+        ctx.fillStyle = `rgba(255,244,214,${b})`;
+        ctx.beginPath(); ctx.arc(sp.x,sp.y,1+Math.min(3,s.radius*0.35),0,Math.PI*2); ctx.fill();
+      }
+      if(state.selected && state.selected.id===g.id){ ctx.strokeStyle='rgba(121,231,255,.9)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(p.x,p.y,g.radius*0.65,0,Math.PI*2); ctx.stroke(); }
+    });
+    ctx.fillStyle='rgba(234,243,255,.9)'; ctx.font='600 14px Inter'; ctx.fillText(phaseForAge(state.age)+' • observer galaxy mode',18,26);
+  }
+
+  function drawSystemView(w,h){
+    const sel = state.selected?.type==='star' ? state.selected : (state.selected?.type==='planet' ? state.selected.parentStar : findFirstStar());
+    if(!sel) return;
+    const cx = w*0.5, cy = h*0.5;
+    const starR = Math.max(16, 10 + sel.radius*1.8);
+    const g = ctx.createRadialGradient(cx,cy,0,cx,cy,starR*4);
+    g.addColorStop(0,'rgba(255,241,187,1)'); g.addColorStop(0.2,'rgba(255,207,101,.85)'); g.addColorStop(1,'rgba(255,165,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx,cy,starR*4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffe6a5'; ctx.beginPath(); ctx.arc(cx,cy,starR,0,Math.PI*2); ctx.fill();
+    sel.planets.forEach((p,i)=>{
+      const orb = 70 + i*42 + p.orbitAU*14;
+      ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.beginPath(); ctx.arc(cx,cy,orb,0,Math.PI*2); ctx.stroke();
+      const ang = (Date.now()/3000 + i*0.9) % (Math.PI*2);
+      p.x = cx + Math.cos(ang)*orb; p.y = cy + Math.sin(ang)*orb;
+      ctx.fillStyle = planetColor(p); ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(4,p.radius*0.35),0,Math.PI*2); ctx.fill();
+      if(p.lifeCapable){ ctx.strokeStyle='rgba(132,255,183,.7)'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(7,p.radius*0.48),0,Math.PI*2); ctx.stroke(); }
+      if(p.biosphere.biosphereCapable){ ctx.strokeStyle='rgba(121,231,255,.55)'; ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(10,p.radius*0.70),0,Math.PI*2); ctx.stroke(); }
+      if(state.selected && state.selected.id===p.id){ ctx.strokeStyle='rgba(121,231,255,.9)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(8,p.radius*0.55),0,Math.PI*2); ctx.stroke(); }
+    });
+  }
+
+  function planetColor(p){
+    if(p.label.includes('Gas')) return '#b6cfff';
+    if(p.label.includes('Ocean')) return '#6fd3ff';
+    if(p.label.includes('Metal')) return '#d1b17a';
+    if(p.label.includes('Cold')) return '#a1d1ff';
+    return '#c18d68';
+  }
+
+  function drawPlanetView(w,h,truth){
+    const p = state.selected?.type==='planet' ? state.selected : findFirstPlanet();
+    if(!p) return;
+    const cx = w*0.5, cy = h*0.52, r = Math.min(w,h)*0.18;
+    if(!truth){
+      const grad = ctx.createRadialGradient(cx-r*0.25,cy-r*0.3,r*0.1,cx,cy,r*1.1);
+      grad.addColorStop(0,'rgba(255,255,255,.9)'); grad.addColorStop(0.08,planetColor(p)); grad.addColorStop(1,'rgba(10,20,40,1)');
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      drawSurfaceBands(p,cx,cy,r);
+      ctx.strokeStyle='rgba(121,231,255,.25)'; ctx.beginPath(); ctx.arc(cx,cy,r*1.28,0,Math.PI*2); ctx.stroke();
+      if(p.lifeCapable){ ctx.strokeStyle='rgba(132,255,183,.55)'; ctx.beginPath(); ctx.arc(cx,cy,r*1.08,0,Math.PI*2); ctx.stroke(); }
+      if(p.biosphere.biosphereCapable){ ctx.strokeStyle='rgba(121,231,255,.45)'; ctx.beginPath(); ctx.arc(cx,cy,r*1.16,0,Math.PI*2); ctx.stroke(); }
+      ctx.fillStyle='rgba(234,243,255,.9)'; ctx.font='600 15px Inter'; ctx.fillText(p.label+' • physical view',18,26);
+    } else {
+      drawTruthShell(p,cx,cy,r);
+      ctx.fillStyle='rgba(234,243,255,.9)'; ctx.font='600 15px Inter'; ctx.fillText(p.label+' • truth-shell view',18,26);
+    }
+  }
+
+  function drawSurfaceBands(p,cx,cy,r){
+    const rr = seeded(state.seed, p.id+'surface');
+    for(let i=0;i<18;i++){
+      const y = cy-r + (i/18)*2*r;
+      const alpha = 0.08 + rr()*0.22;
+      ctx.strokeStyle = `rgba(${160+Math.floor(rr()*70)},${90+Math.floor(rr()*90)},${70+Math.floor(rr()*90)},${alpha})`;
+      ctx.beginPath();
+      for(let x=cx-r; x<=cx+r; x+=4){
+        const dx = (x-cx)/r; if(dx*dx>1) continue;
+        const dy = Math.sqrt(1-dx*dx)*r;
+        const yy = y + Math.sin(dx*8 + i*0.8)*rr()*6;
+        if(Math.abs(yy-cy) <= dy) ctx.lineTo(x,yy);
+      }
+      ctx.stroke();
+    }
+  }
+
+  function drawTruthShell(p,cx,cy,r){
+    const disp = p.mass/(Math.pow(r*0.018, CONSTANTS.n_grav)+CONSTANTS.eps_sing);
+    for(let i=1;i<=5;i++){
+      const rr = r*(0.62 + i*0.18);
+      ctx.strokeStyle = i%2 ? 'rgba(121,231,255,.28)' : 'rgba(152,134,255,.22)';
+      ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.stroke();
+    }
+    for(let a=0;a<12;a++){
+      const ang = a/12*Math.PI*2;
+      ctx.strokeStyle='rgba(255,255,255,.10)';
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(ang)*r*1.55, cy+Math.sin(ang)*r*1.55); ctx.stroke();
+    }
+    ctx.strokeStyle='rgba(121,231,255,.6)'; ctx.lineWidth=1.2;
+    ctx.beginPath();
+    for(let i=0;i<=360;i++){
+      const ang = i*Math.PI/180;
+      const d = r*(1 + 0.06*Math.sin(ang*5) + 0.04*Math.cos(ang*7) + disp*0.0002);
+      const x = cx + Math.cos(ang)*d, y = cy + Math.sin(ang)*d;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath(); ctx.stroke();
+    ctx.fillStyle='rgba(13,24,44,.9)'; ctx.beginPath(); ctx.arc(cx,cy,r*0.52,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.beginPath(); ctx.arc(cx,cy,r*0.52,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle='#79e7ff'; ctx.beginPath(); ctx.arc(cx,cy-r*1.28,5,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(121,231,255,.55)'; ctx.beginPath(); ctx.moveTo(cx,cy-r*1.18); ctx.lineTo(cx,cy-r*0.55); ctx.stroke();
+    ctx.fillStyle='rgba(234,243,255,.9)'; ctx.font='600 12px Inter';
+    ctx.fillText('displacement shell', cx+r*0.95, cy-r*0.75);
+    ctx.fillText('atmosphere / magnetic envelope', cx-r*1.45, cy-r*0.95);
+    ctx.fillText('observer probe / receipt path', cx-r*0.52, cy-r*1.36);
+    if(p.biosphere.biosphereCapable){ ctx.fillStyle='rgba(132,255,183,.95)'; ctx.fillText('biosphere envelope: '+p.biosphere.stage, cx-r*0.65, cy+r*1.20); }
+    ctx.fillStyle='rgba(121,231,255,.95)'; ctx.fillText('latent atom field: present / compressed', cx-r*0.9, cy+r*1.35);
+  }
+
+  function findFirstStar(){ for(const g of state.universe.galaxies) if(g.stars[0]) return g.stars[0]; return null; }
+  function findFirstPlanet(){ for(const g of state.universe.galaxies) for(const s of g.stars) if(s.planets[0]) return s.planets[0]; return null; }
+
+  function stepTimeline(){
+    if(!state.playing) return;
+    const current = Number(ageSlider.value);
+    const step = Number(timeScaleSelect.value);
+    let next = current + step;
+    if(next > Number(ageSlider.max)) next = Number(ageSlider.max);
+    ageSlider.value = String(next);
+    updateUniverse();
+    if(next >= Number(ageSlider.max)) togglePlay(false);
+  }
+
+  function togglePlay(force){
+    state.playing = typeof force==='boolean' ? force : !state.playing;
+    playBtn.textContent = state.playing ? 'Pause' : 'Play';
+  }
+
+  seedInput.addEventListener('change', updateUniverse);
+  ageSlider.addEventListener('input', updateUniverse);
+  modeSelect.addEventListener('change', updateUniverse);
+  regenBtn.addEventListener('click', updateUniverse);
+  playBtn.addEventListener('click', () => togglePlay());
+  resetBtn.addEventListener('click', () => { ageSlider.value = '0'; updateUniverse(); togglePlay(false); });
+  window.addEventListener('resize', draw);
+  canvas.addEventListener('click', (e) => {
+    if(state.mode!=='system') return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const star = state.selected?.type==='star' ? state.selected : findFirstStar();
+    if(!star) return;
+    for(const p of star.planets){
+      const r = Math.max(8,p.radius*0.55);
+      if(dist(x,y,p.x,p.y) <= r){ state.selected = p; modeSelect.value='planet'; updateUniverse(); return; }
+    }
+  });
+
+  updateUniverse();
+  setInterval(() => { stepTimeline(); if(state.mode==='system') draw(); }, 33);
+})();
+</script>
+</body>
+</html>
