@@ -1,5 +1,5 @@
-# Seeded Universe Recreation Engine
-### 'SURE' - Deterministic Physics • Latent Atomic Reality • Life-Capable Simulation
+# SURE: Seeded Universe Recreation Engine
+### - Deterministic Physics • Latent Atomic Reality • Life-Capable Simulation
 
 ## Overview
 
