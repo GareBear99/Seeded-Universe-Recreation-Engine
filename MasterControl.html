@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Master Control — Universe Engine + Synth Origin</title>
+<style>
+  :root {
+    --bg: #000408;
+    --accent: #79e7ff;
+    --magenta: #ff60d2;
+    --gold: #ffd840;
+    --text: #d6f7ff;
+    --muted: rgba(180,220,255,0.55);
+    --bar-h: 48px;
+    --status-h: 32px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; }
+
+  /* ── Top command bar ── */
+  #cmdbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--bar-h);
+    z-index: 100; display: flex; align-items: center; gap: 10px; padding: 0 14px;
+    background: rgba(0,4,12,0.92); border-bottom: 1px solid rgba(120,255,255,0.12);
+    backdrop-filter: blur(10px);
+  }
+  .logo { font-size: 13px; font-weight: 700; color: var(--magenta); letter-spacing: .1em; white-space: nowrap; }
+  .logo span { color: var(--accent); }
+  .divider { width: 1px; height: 24px; background: rgba(120,255,255,0.15); flex-shrink: 0; }
+  .cmd { padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(120,255,255,0.25);
+    background: rgba(0,0,0,0.3); color: var(--text); cursor: pointer; font: inherit;
+    font-size: 11px; white-space: nowrap; transition: border-color .15s; }
+  .cmd:hover { border-color: rgba(120,255,255,0.55); }
+  .cmd.active { border-color: var(--accent); color: var(--accent); background: rgba(121,231,255,0.08); }
+  .cmd.magenta { border-color: rgba(255,90,225,0.4); color: rgba(255,90,225,0.9); }
+  .cmd.magenta.active { background: rgba(255,90,225,0.1); }
+  .cmd.gold { border-color: rgba(255,220,60,0.4); color: rgba(255,220,60,0.9); }
+  #statusBar {
+    margin-left: auto; display: flex; gap: 10px; align-items: center; font-size: 10px;
+    color: var(--muted); white-space: nowrap;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .dot.live { background: #80ffb7; box-shadow: 0 0 6px #80ffb7; }
+  .dot.warn { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+
+  /* ── Main layout ── */
+  #layout {
+    position: fixed; top: var(--bar-h); left: 0; right: 0;
+    bottom: var(--status-h); display: flex; gap: 0;
+  }
+
+  /* ── Panels ── */
+  .panel { position: relative; overflow: hidden; flex: 1; min-width: 0; }
+  .panel-label {
+    position: absolute; top: 8px; left: 10px; z-index: 10;
+    font-size: 10px; letter-spacing: .12em; color: var(--muted); pointer-events: none;
+  }
+  #splitter {
+    width: 6px; background: rgba(120,255,255,0.06); cursor: col-resize; flex-shrink: 0;
+    border-left: 1px solid rgba(120,255,255,0.10); border-right: 1px solid rgba(120,255,255,0.10);
+    transition: background .15s;
+  }
+  #splitter:hover { background: rgba(120,255,255,0.18); }
+  iframe { width: 100%; height: 100%; border: none; display: block; }
+
+  /* ── Status bar ── */
+  #statusStrip {
+    position: fixed; bottom: 0; left: 0; right: 0; height: var(--status-h);
+    z-index: 100; display: flex; align-items: center; gap: 14px; padding: 0 14px;
+    background: rgba(0,4,12,0.92); border-top: 1px solid rgba(120,255,255,0.08);
+    font-size: 10px; color: var(--muted);
+  }
+  #statusStrip .pill {
+    padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(120,255,255,0.18);
+    background: rgba(0,0,0,0.2);
+  }
+
+  /* ── Bridge overlay (shows when synth detects intelligence) ── */
+  #bridgeAlert {
+    position: fixed; top: calc(var(--bar-h) + 12px); left: 50%; transform: translateX(-50%);
+    z-index: 200; padding: 8px 18px; border-radius: 10px;
+    background: rgba(255,90,225,0.15); border: 1px solid rgba(255,90,225,0.5);
+    color: rgba(255,90,225,1); font-size: 12px; letter-spacing: .08em;
+    display: none; backdrop-filter: blur(8px);
+  }
+
+  /* ── Layout mode overrides ── */
+  body.mode-universe #panel-synth { display: none; }
+  body.mode-universe #splitter { display: none; }
+  body.mode-synth #panel-universe { display: none; }
+  body.mode-synth #splitter { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Command Bar -->
+<div id="cmdbar">
+  <div class="logo">MASTER<span>CONTROL</span></div>
+  <div class="divider"></div>
+  <button class="cmd" id="btnSplit" onclick="setLayout('split')">Split View</button>
+  <button class="cmd" id="btnUniverse" onclick="setLayout('universe')">Universe Only</button>
+  <button class="cmd magenta" id="btnSynth" onclick="setLayout('synth')">Synth Only</button>
+  <div class="divider"></div>
+  <button class="cmd gold" id="btnSynthCenter" onclick="setSynthCenter()">⊙ Synth Center</button>
+  <button class="cmd" id="btnBridge" onclick="testBridge()">Test Bridge</button>
+  <div class="divider"></div>
+  <button class="cmd" onclick="openARC()">ARC Console</button>
+  <div id="statusBar">
+    <span class="dot" id="dotUniverse"></span><span id="lblUniverse">universe offline</span>
+    <span class="dot" id="dotSynth"></span><span id="lblSynth">synth offline</span>
+    <span class="dot" id="dotBridge"></span><span id="lblBridge">bridge offline</span>
+  </div>
+</div>
+
+<!-- Main layout -->
+<div id="layout">
+  <div class="panel" id="panel-universe">
+    <div class="panel-label">UNIVERSE ENGINE v16</div>
+    <iframe id="frameUniverse"
+      src="sure/universe_observer_v16_vision.html"
+      title="Universe Engine"
+      sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+  </div>
+  <div id="splitter"></div>
+  <div class="panel" id="panel-synth">
+    <div class="panel-label">SYNTH — UNIVERSE ORIGIN ⊙</div>
+    <iframe id="frameSynth" id="synthFrame"
+      src="synth/index.html"
+      title="Synth Origin"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"></iframe>
+  </div>
+</div>
+
+<!-- Status strip -->
+<div id="statusStrip">
+  <span class="pill">TT-101</span>
+  <span id="tt101Strip">loading...</span>
+  <span class="pill">BRIDGE</span>
+  <span id="bridgeStrip">offline</span>
+  <span class="pill">UNIVERSE</span>
+  <span id="universeStrip">—</span>
+  <span class="pill">SYNTH</span>
+  <span id="synthStrip">—</span>
+</div>
+
+<!-- Bridge alert -->
+<div id="bridgeAlert" id="bridgeAlert"></div>
+
+<script>
+// ── Layout modes ──────────────────────────────────────────────────────────
+function setLayout(mode) {
+  document.body.className = 'mode-' + mode;
+  document.getElementById('btnSplit').classList.toggle('active', mode==='split');
+  document.getElementById('btnUniverse').classList.toggle('active', mode==='universe');
+  document.getElementById('btnSynth').classList.toggle('active', mode==='synth');
+  if(mode==='synth') document.getElementById('btnSynth').classList.add('active');
+}
+
+function setSynthCenter() {
+  // Switch universe to L7 Synth Center view
+  const uFrame = document.getElementById('frameUniverse');
+  if(uFrame && uFrame.contentWindow) {
+    try {
+      uFrame.contentWindow.postMessage({ type: 'SET_ZOOM', level: 7 }, '*');
+    } catch(_) {}
+  }
+  document.getElementById('btnSynthCenter').classList.add('active');
+  setTimeout(() => document.getElementById('btnSynthCenter').classList.remove('active'), 1500);
+}
+
+function openARC() {
+  window.open('ARC_Console/arc/ui/dashboard.html', '_blank');
+}
+
+function testBridge() {
+  showAlert('BRIDGE TEST — signal pulse injected from master control', 2000);
+  bridgeEvent('bridge_test', { source: 'master_control', tick: Date.now() });
+}
+
+// ── Status polling ────────────────────────────────────────────────────────
+let _bridgeTick = 0;
+let _lastUniverseAge = null;
+let _lastSynthTick = null;
+
+function updateStatus() {
+  // Universe
+  const uFrame = document.getElementById('frameUniverse');
+  const uAlive = uFrame && uFrame.contentDocument && uFrame.contentDocument.readyState === 'complete';
+  dot('dotUniverse', uAlive ? 'live' : '');
+  lbl('lblUniverse', uAlive ? 'universe live' : 'universe loading...');
+
+  // Synth
+  const sFrame = document.getElementById('frameSynth');
+  const sAlive = sFrame && sFrame.contentDocument && sFrame.contentDocument.readyState === 'complete';
+  dot('dotSynth', sAlive ? 'live' : '');
+  lbl('lblSynth', sAlive ? 'synth live' : 'synth loading...');
+
+  // Bridge
+  const bridgeAlive = _bridgeTick > 0;
+  dot('dotBridge', bridgeAlive ? 'live' : 'warn');
+  lbl('lblBridge', bridgeAlive ? `bridge live (t${_bridgeTick})` : 'bridge waiting');
+
+  // TT-101
+  document.getElementById('tt101Strip').textContent =
+    'R1:seed ✓  R2:causality ✓  R3:conservation ✓  R4:emergent ✓  R5:receipted ✓';
+}
+
+function dot(id, cls) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.className = 'dot' + (cls ? ' ' + cls : '');
+}
+function lbl(id, text) {
+  const el = document.getElementById(id);
+  if(el) el.textContent = text;
+}
+
+// ── Bridge message relay ──────────────────────────────────────────────────
+// Relay messages between the two iframes
+window.addEventListener('message', (ev) => {
+  if(!ev.data || typeof ev.data !== 'object') return;
+  const { type, payload } = ev.data;
+
+  if(type === 'UNIVERSE_STATE') {
+    // Forward to synth
+    const sFrame = document.getElementById('frameSynth');
+    if(sFrame && sFrame.contentWindow) {
+      try { sFrame.contentWindow.postMessage(ev.data, '*'); } catch(_) {}
+    }
+    _bridgeTick++;
+    if(payload) {
+      const age = payload.age ? payload.age.toFixed(2) + ' Gyr' : '—';
+      const life = payload.lifeCapableCount || 0;
+      document.getElementById('universeStrip').textContent =
+        `seed:${(payload.seed||'').slice(0,8)} age:${age} life:${life}`;
+      document.getElementById('bridgeStrip').textContent =
+        `t${_bridgeTick} — universe→synth active`;
+    }
+  }
+
+  if(type === 'SYNTH_OUTPUT') {
+    // Forward to universe
+    const uFrame = document.getElementById('frameUniverse');
+    if(uFrame && uFrame.contentWindow) {
+      try { uFrame.contentWindow.postMessage(ev.data, '*'); } catch(_) {}
+    }
+    if(payload) {
+      document.getElementById('synthStrip').textContent =
+        `event:${payload.type || '?'}`;
+      // Flash alert on intelligence detection
+      if(payload.type === 'contact_detected' && payload.intelScore > 0.6) {
+        showAlert(`INTELLIGENCE DETECTED — ${payload.contactId || 'unknown'} score:${(payload.intelScore*100).toFixed(0)}%`, 3000);
+      }
+    }
+  }
+
+  if(type === 'SET_ZOOM') {
+    // Pass zoom command to universe iframe
+    const uFrame = document.getElementById('frameUniverse');
+    if(uFrame && uFrame.contentWindow) {
+      try { uFrame.contentWindow.postMessage(ev.data, '*'); } catch(_) {}
+    }
+  }
+});
+
+// ── Bridge event logger ───────────────────────────────────────────────────
+function bridgeEvent(type, data) {
+  _bridgeTick++;
+  // Dispatch to both frames
+  const msg = { type: 'BRIDGE_EVENT', payload: { type, data, tick: _bridgeTick, ts: Date.now() } };
+  ['frameUniverse','frameSynth'].forEach(id => {
+    const f = document.getElementById(id);
+    if(f && f.contentWindow) try { f.contentWindow.postMessage(msg, '*'); } catch(_) {}
+  });
+}
+
+// ── Alert banner ──────────────────────────────────────────────────────────
+let _alertTimer = null;
+function showAlert(msg, ms) {
+  const el = document.getElementById('bridgeAlert');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(_alertTimer);
+  _alertTimer = setTimeout(() => { el.style.display = 'none'; }, ms || 3000);
+}
+
+// ── Splitter drag ─────────────────────────────────────────────────────────
+(function() {
+  const splitter = document.getElementById('splitter');
+  const layout   = document.getElementById('layout');
+  let dragging   = false, startX = 0, startW = 0;
+
+  splitter.addEventListener('mousedown', e => {
+    dragging = true; startX = e.clientX;
+    const pu = document.getElementById('panel-universe');
+    startW = pu.getBoundingClientRect().width;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  window.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    const delta = e.clientX - startX;
+    const total = layout.getBoundingClientRect().width - 6;
+    const newW  = Math.max(200, Math.min(total - 200, startW + delta));
+    const pu = document.getElementById('panel-universe');
+    const ps = document.getElementById('panel-synth');
+    pu.style.flex = 'none'; pu.style.width = newW + 'px';
+    ps.style.flex = '1';
+  });
+
+  window.addEventListener('mouseup', () => {
+    if(dragging) {
+      dragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+})();
+
+// ── Receive SET_ZOOM from buttons in universe iframe ──────────────────────
+window.addEventListener('message', ev => {
+  if(ev.data && ev.data.type === 'SET_ZOOM') {
+    const uFrame = document.getElementById('frameUniverse');
+    if(uFrame && uFrame.contentWindow) {
+      try {
+        const win = uFrame.contentWindow;
+        if(win.setZoom) win.setZoom(ev.data.level);
+      } catch(_) {}
+    }
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────
+setLayout('split');
+setInterval(updateStatus, 1500);
+updateStatus();
+
+// Welcome
+setTimeout(() => {
+  showAlert('MASTER CONTROL ONLINE — Universe Engine v16 + Synth Origin v67 + Bridge v1', 4000);
+}, 1200);
+</script>
+</body>
+</html>

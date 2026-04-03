@@ -1,0 +1,16 @@
+{
+  "moduleType": "hud",
+  "id": "UNIVERSE_HUD_MASTER",
+  "style": "iteration4",
+  "config": {
+    "label": "UNIVERSE ORIGIN HUD",
+    "layout": "expanded",
+    "panels": [
+      { "id": "universe_state",  "title": "UNIVERSE",   "fields": ["seed","age","lifeCapableCount","biosphereCount"] },
+      { "id": "intel_scan",      "title": "INTEL SCAN", "fields": ["civContacts","intelScore","signalStrength"] },
+      { "id": "tt101_status",    "title": "TT-101",     "fields": ["R1_seed","R2_causality","R3_energy","R4_emergent"] }
+    ],
+    "_universeMode": true,
+    "_bridgeSource": "UNIVERSE_BRIDGE_v1"
+  }
+}
