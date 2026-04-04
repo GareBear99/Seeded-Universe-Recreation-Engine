@@ -1,159 +1,209 @@
-# Master Control — Complete System
-**Universe Engine v16 + Synth Origin (Iteration 10) + ARC-Core**
+# Seeded Universe Recreation Engine
 
----
+A deterministic, seed-first universe simulation project that connects a browser-based universe observer, a Synth control shell, and ARC-Core into one broader AGI / simulation stack.
 
-## Start Here
+This repository is the public-facing concept and prototype package for a larger long-range goal: reconstructing a universe from seed-governed math first, rendering second, then using observation, control, and receipted intervention layers to study emergence, chemistry, life potential, and intelligence signatures.
 
-### Full split-screen experience
+## What this repo currently contains
+
+This package is not a single monolith. It includes three connected layers:
+
+- **Universe Observer / SURE prototype**: browser-based seeded universe and planet simulation views
+- **Synth control shell**: a deterministic, blueprint-driven signal/control surface
+- **ARC-Core console**: a FastAPI-based intelligence and receipt layer for records, cases, graph state, watchlists, proposals, notes, and universe records
+
+Top-level entry points:
+
+- `MasterControl.html` — split-screen launcher for universe + synth + bridge flow
+- `sure/universe_observer_v16_vision.html` — main universe observer view
+- `universe_observer_prototype_v8_local_region_chemistry.html` — earlier chemistry-focused prototype
+- `synth/index.html` — Synth shell and module runtime
+- `ARC_Console/` — ARC-Core API and UI package
+- `launch.py` — local launcher for ARC + browser front-end
+
+## Why this exists
+
+The broader thesis behind this repo is:
+
+- reality can be modeled as a seed-rooted, causal, math-governed system
+- visual output should derive from authoritative simulated state rather than decorative shortcuts
+- chemistry, habitability, life potential, and intelligence signatures should emerge from deterministic rules rather than hardcoded outcomes
+- any observation, intervention, or control attempt should be receipted and comparable against the canonical seed path
+
+This repo is one part of a larger ecosystem pursuing that architecture.
+
+## Related repositories in the stack
+
+- [Proto-AGI](https://github.com/GareBear99/Proto-AGI)
+- [ARC-Core](https://github.com/GareBear99/ARC-Core)
+- [ARC-Turbo-OS](https://github.com/GareBear99/ARC-Turbo-OS)
+- [Arc-RAR](https://github.com/GareBear99/Arc-RAR)
+- [Proto-Synth_Grid_Engine](https://github.com/GareBear99/Proto-Synth_Grid_Engine)
+- [Seeded-Universe-Recreation-Engine](https://github.com/GareBear99/Seeded-Universe-Recreation-Engine)
+- [LuciferAI_Local](https://github.com/GareBear99/LuciferAI_Local)
+- [AGI_Photon-Quantum-Computing](https://github.com/GareBear99/AGI_Photon-Quantum-Computing)
+
+## Where this repo fits in that stack
+
+This project is the **simulation / emergence / observation layer**.
+
+- **Proto-AGI** frames the broader intelligence direction.
+- **ARC-Core** provides records, graphing, cases, proposals, watchlists, receipts, and operator-facing APIs.
+- **ARC-Turbo-OS** points toward a seed-rooted, event-spine runtime where state can be reconstructed and reused.
+- **Arc-RAR** explores portable archive / package handling across systems.
+- **Proto-Synth_Grid_Engine** provides the Synth shell and execution surface logic.
+- **LuciferAI_Local** is the local model/runtime side for intelligence augmentation.
+- **AGI_Photon-Quantum-Computing** represents the future compute/control substrate for higher-speed cognition and hardware orchestration.
+- **Seeded-Universe-Recreation-Engine** is where seeded world generation, chemistry, life potential, signal observation, and comparative intervention concepts meet.
+
+## Current architecture
+
+```text
+MasterControl.html
+├── sure/universe_observer_v16_vision.html
+│   ├── seeded universe / planetary / chemistry / habitability logic
+│   ├── life-potential and civilisation-signature modeling
+│   └── bridge messages to Synth
+├── synth/index.html
+│   ├── blueprint-gated shell runtime
+│   ├── scanner / ship / HUD modules
+│   ├── validator / recovery / authority helpers
+│   └── signal and receipt interactions
+├── universe_bridge.js
+│   ├── universe → synth contact extraction
+│   ├── synth → universe receipt flow
+│   └── bridge event logging
+└── ARC_Console/
+    ├── FastAPI app and routes
+    ├── auth / cases / watchlists / proposals / notes / connectors
+    ├── geospatial and graph services
+    └── universe record ledger endpoints
 ```
-MasterControl.html   ← open in browser
-```
-Both systems load side by side. The bridge connects them automatically.
 
-### Individual components
-```
-sure/universe_observer_v16_vision.html   ← Universe Engine alone
-synth/index.html                         ← Synth Origin alone
-```
+## Code surface audit
 
-### ARC backend (optional)
+This repo was read before documentation updates.
+
+Audit snapshot of the package in this repo:
+
+- **55 files** total
+- **31 Python files**
+- **149 Python functions**
+- **20 Python classes**
+- **0 Python syntax errors** in the audited package
+
+The ARC layer is materially broader than a minimal demo. It already includes:
+
+- FastAPI app boot and route registration
+- auth/session bootstrap and role resolution
+- event ingest and entity listing
+- graph snapshot and timeline views
+- watchlists, cases, evidence, proposals, and approvals
+- notes, connectors, and polling hooks
+- geospatial structures, geofences, heatmaps, track estimation/import, and evidence export
+- universe record creation/listing
+
+See [`docs/CODE_SURFACE_AUDIT.md`](docs/CODE_SURFACE_AUDIT.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+## Quick start
+
+### Browser-only front end
+
+Open:
+
+- `MasterControl.html` for the split-screen launcher
+- `sure/universe_observer_v16_vision.html` for the universe observer only
+- `synth/index.html` for the Synth shell only
+
+### ARC + front end launcher
+
 ```bash
-pip install fastapi uvicorn pydantic
-python launch.py
+python3 launch.py
 ```
 
----
+Useful options:
 
-## What is this
-
-Three systems, one doctrine.
-
-### Universe Engine v16
-A deterministic, seed-based universe simulation. From one seed, an entire
-universe unfolds: stars, planets, atmospheres, oceans, geology, chemistry,
-life, evolution, civilisations. Every state is already computed — we reveal
-it, we don't create it.
-
-Physics that work: Stefan-Boltzmann temperature, Jeans escape atmospheres,
-water phase diagram life-capable check, Kepler orbits, tidal locking,
-radioactive heating, supernova enrichment, Kardashev civilisations,
-64-bit genome encoding, autocatalytic first replication events.
-
-### Synth Origin (Proto-Synth Grid Engine Iteration 10)
-The synth sits at the center of the universe. It is the signal instrument —
-a blueprint-driven execution shell with a master control eye, scanner sweep,
-route/signal network, and ARC-gated authority receipts.
-
-In universe mode: the synth's scanner detects civilisations as contacts.
-Its signal network becomes the communication backbone. Its eye watches
-everything from the origin point.
-
-### Universe Bridge v1
-The bridge connects both systems without breaking causality. Universe state
-flows to the synth as scanner contacts. Synth signal events flow back to
-the universe as receipts. Every crossing is logged. TT-101 rules enforced.
-
----
-
-## MasterControl.html Controls
-
-| Control | Action |
-|---|---|
-| Split View | Side-by-side universe + synth |
-| Universe Only | Full-screen universe engine |
-| Synth Only | Full-screen synth origin |
-| ⊙ Synth Center | Switch universe to L7 zoom — synth eye view |
-| Test Bridge | Fire a bridge pulse, verify both systems respond |
-| ARC Console | Open ARC truth ledger dashboard |
-| Drag splitter | Resize the two panels |
-
----
-
-## Zoom Levels (Universe Engine)
-
-| Level | View |
-|---|---|
-| L0 | Cosmos — full universe |
-| L1 | Galaxy cluster |
-| L2 | Stellar system |
-| L3 | Planet surface |
-| L4 | Region cross-section |
-| L5 | Molecule field |
-| L6 | Atom patch |
-| **L7** | **Synth Center — universe origin eye** |
-
-Scroll wheel on canvas zooms through all levels.
-
----
-
-## TT-101 Doctrine
-
-Six rules that cannot be violated:
-
-1. **Seed canonical** — seed is never changed to force outcomes
-2. **Causality absolute** — no signal travels faster than c_sim
-3. **Energy conserved** — ΔE_total = 0 always
-4. **Intelligence emergent** — life cannot be hardcoded, only arise from physics
-5. **Interventions receipted** — every perturbation logged in ARC
-6. **Branch comparable** — modified universe never replaces canonical
-
----
-
-## Synth Files
-
-| File | Purpose |
-|---|---|
-| `synth/index.html` | Synth engine (v67) — the universe's signal instrument |
-| `synth/blueprint_octagon.json` | Default shell geometry |
-| `synth/module_ship_default.json` | Master Control eye module |
-| `synth/module_scanner_default.json` | Synthesis scanner module |
-| `synth/module_probe_default.json` | Probe planner module |
-| `synth/module_hud_universe.json` | Universe HUD module (new) |
-| `synth/arc_authority_v55.js` | ARC writeback authority |
-| `synth/arc_schema_v54.js` | Tile blueprint schema |
-| `synth/arc_recovery_v54.js` | Recovery slot system |
-| `synth/arc_validator_v55.js` | Runtime validator |
-
----
-
-## Architecture
-
-```
-MasterControl.html (split-screen launcher + bridge relay)
-│
-├── Universe Engine v16 (sure/universe_observer_v16_vision.html)
-│   ├── Seed → physics → stars → planets → life → civilisation
-│   ├── TT-101 doctrine enforcement
-│   ├── Intelligence signature detector
-│   ├── Intervention engine (epsilon → divergence → leverage)
-│   ├── Signal propagation (c_sim limited)
-│   ├── L0-L7 zoom stack
-│   └── pushToSynthBridge() → universe state every frame
-│
-├── Universe Bridge (universe_bridge.js)
-│   ├── onUniverseState() → extracts civ contacts → feeds synth
-│   ├── onSynthOutput() → signal events → universe receipt
-│   ├── generateUniverseBlueprint() → seed-matched synth geometry
-│   └── Receipt chain: every crossing logged
-│
-├── Synth Origin (synth/index.html — Iteration 10 v67)
-│   ├── Master control eye at universe center
-│   ├── Scanner sweep detects civilisation contacts
-│   ├── Signal/route network — communication backbone
-│   ├── ARC authority receipts (GRANT/DENY/PING)
-│   ├── SYNTH_UNIVERSE_FEED() — receives universe state
-│   └── SYNTH_EMIT() — sends signal events to universe
-│
-└── ARC-Core (ARC_Console/)
-    ├── Universe record ledger
-    ├── Receipt chain (tamper-evident)
-    ├── Branch simulation
-    └── REST API: /api/universe/records
+```bash
+python3 launch.py --check
+python3 launch.py --arc-only
+python3 launch.py --sure-only
+python3 launch.py --master-only
 ```
 
----
+### ARC dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Then run:
+
+```bash
+python3 launch.py --arc-only
+```
+
+## What is real today vs. what is aspirational
+
+What is already present in this repo:
+
+- browser prototypes for seeded universe observation
+- browser Synth control/runtime surfaces
+- JavaScript bridge logic between simulation and Synth layers
+- a real ARC-Core FastAPI service surface inside `ARC_Console/`
+- launch tooling for local startup
+
+What remains aspirational / long-range:
+
+- complete physically rigorous universe reconstruction
+- full-life emergence validation from first principles
+- production-hardened cross-machine orchestration
+- large-scale long-run evidence proving intelligence emergence
+- deeper integration with the broader ARC / Lucifer / Synth stack
+
+## SEO / discoverability framing
+
+This repository is best understood as a public concept/prototype package for:
+
+- seeded universe simulation
+- deterministic world generation
+- emergent life and civilisation modeling
+- browser-based AGI simulation interfaces
+- ARC-linked simulation records and receipts
+- Synth-mediated control and observation
+- SSOT / seed-rooted runtime architecture
+
+See [`docs/SEO_PROMOTION.md`](docs/SEO_PROMOTION.md) for suggested repo description, topic tags, promotion copy, and public-facing phrasing.
+
+## Recommended GitHub About description
+
+`Seeded universe simulation, Synth observer shell, and ARC-linked intelligence records for a deterministic AGI / emergence stack.`
+
+## Suggested repository topics
+
+`seeded-universe, universe-simulation, deterministic-systems, world-generation, emergent-life, agi, cognitive-architecture, fastapi, simulation, systems-architecture, chemistry-simulation, habitability`
+
+## Repo hygiene files added in this package pass
+
+- `requirements.txt`
+- `docs/ARCHITECTURE.md`
+- `docs/STACK.md`
+- `docs/CODE_SURFACE_AUDIT.md`
+- `docs/SEO_PROMOTION.md`
+- `docs/REPO_SETUP_CHECKLIST.md`
+- `.github/workflows/ci.yml`
+- `.github/ISSUE_TEMPLATE/bug_report.md`
+- `.github/ISSUE_TEMPLATE/feature_request.md`
+- `.github/pull_request_template.md`
+- `.gitignore`
+- `LICENSE`
+- `CHANGELOG.md`
+- `CONTRIBUTING.md`
+- `SECURITY.md`
+- `CODE_OF_CONDUCT.md`
+- `Makefile`
 
 ## Author
-Gary Doman — DOMAN_ORIGIN_RECORD
-Master Control: SURE v16 + Synth Origin v67 + ARC-Core + Bridge v1
+
+Gary Doman
+
+Canonical ecosystem provenance: DOMAN_ORIGIN_RECORD
