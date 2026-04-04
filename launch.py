@@ -4,9 +4,10 @@ Master Control — Universe Engine + ARC Spine
 Single-command boot for the unified SURE + ARC system.
 
 Usage:
-    python launch.py              # start both services
+    python launch.py              # start ARC and open Master Control
     python launch.py --arc-only   # ARC backend only
-    python launch.py --sure-only  # open SURE universe engine only
+    python launch.py --sure-only  # open universe observer only
+    python launch.py --master-only # open Master Control only
     python launch.py --check      # verify environment only
 """
 import argparse
@@ -19,7 +20,8 @@ from pathlib import Path
 
 ROOT    = Path(__file__).resolve().parent
 ARC_DIR = ROOT / "ARC_Console"
-SURE_FILE = ROOT / "sure" / "universe_observer_v10_master_control.html"
+MASTER_FILE = ROOT / "MasterControl.html"
+UNIVERSE_FILE = ROOT / "sure" / "universe_observer_v16_vision.html"
 
 ARC_HOST  = "127.0.0.1"
 ARC_PORT  = 8000
@@ -42,11 +44,17 @@ def check_env():
             print(f"[MISS] {pkg} — run: pip install {pkg}")
             ok = False
 
-    # SURE file
-    if SURE_FILE.exists():
-        print(f"[OK]   SURE engine: {SURE_FILE.name}")
+    # Front-end files
+    if MASTER_FILE.exists():
+        print(f"[OK]   Master Control: {MASTER_FILE.name}")
     else:
-        print(f"[MISS] SURE file not found at {SURE_FILE}")
+        print(f"[MISS] Master Control file not found at {MASTER_FILE}")
+        ok = False
+
+    if UNIVERSE_FILE.exists():
+        print(f"[OK]   Universe engine: {UNIVERSE_FILE.name}")
+    else:
+        print(f"[MISS] Universe file not found at {UNIVERSE_FILE}")
         ok = False
 
     # ARC package
@@ -69,23 +77,29 @@ def start_arc():
         env=env,
     )
 
-def open_sure():
-    url = SURE_FILE.as_uri()
+def open_universe():
+    url = UNIVERSE_FILE.as_uri()
     print(f"\n[SURE] Opening Universe Engine: {url}")
+    webbrowser.open(url)
+
+def open_master():
+    url = MASTER_FILE.as_uri()
+    print(f"\n[MC]   Opening Master Control: {url}")
     webbrowser.open(url)
 
 def main():
     parser = argparse.ArgumentParser(description="Master Control launcher")
     parser.add_argument("--arc-only",  action="store_true")
     parser.add_argument("--sure-only", action="store_true")
-    parser.add_argument("--check",     action="store_true")
+    parser.add_argument("--master-only", action="store_true")
+    parser.add_argument("--check",       action="store_true")
     args = parser.parse_args()
 
     print("=" * 60)
     print("  MASTER CONTROL — Universe Engine + ARC Spine")
     print("=" * 60)
 
-    if args.check or not (args.arc_only or args.sure_only):
+    if args.check or not (args.arc_only or args.sure_only or args.master_only):
         ok = check_env()
         if args.check:
             sys.exit(0 if ok else 1)
@@ -94,12 +108,16 @@ def main():
 
     procs = []
 
-    if not args.sure_only:
+    if not args.sure_only and not args.master_only:
         procs.append(start_arc())
         time.sleep(1.5)   # let ARC boot before browser opens
 
-    if not args.arc_only:
-        open_sure()
+    if args.sure_only:
+        open_universe()
+    elif args.master_only:
+        open_master()
+    elif not args.arc_only:
+        open_master()
 
     if procs:
         print(f"\n[INFO] ARC dashboard: http://{ARC_HOST}:{ARC_PORT}/")

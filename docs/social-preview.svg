@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <rect width="1280" height="640" fill="#0b0f18"/>
+  <circle cx="220" cy="180" r="90" fill="#8b5cf6" opacity="0.18"/>
+  <circle cx="960" cy="420" r="150" fill="#22d3ee" opacity="0.14"/>
+  <text x="80" y="180" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700">Seeded-Universe-Recreation-Engine</text>
+  <text x="80" y="250" fill="#b9c2d0" font-family="Arial, Helvetica, sans-serif" font-size="28">Deterministic universe simulation · Synth observer shell · ARC-linked records</text>
+  <text x="80" y="360" fill="#d8b4fe" font-family="Arial, Helvetica, sans-serif" font-size="34">Seed → physics → chemistry → life potential → observation → receipts</text>
+  <text x="80" y="470" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="26">github.com/GareBear99</text>
+</svg>
