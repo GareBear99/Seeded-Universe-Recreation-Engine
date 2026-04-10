@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Proto-Synth Wetware Core v2</title>
+<style>
+  :root{
+    --bg:#03050b;
+    --panel:#070b13cc;
+    --panel2:#0b1019dd;
+    --line:#5f77ff33;
+    --text:#d8e4ff;
+    --muted:#86a0c7;
+    --accent:#cf6dff;
+    --accent2:#79d6ff;
+    --good:#8dffb3;
+    --warn:#ffd76a;
+    --danger:#ff7f9f;
+    --grid:#9c6cff22;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:radial-gradient(circle at 50% 35%, #140722 0%, #05070c 36%, #020308 100%);color:var(--text);font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;overflow:hidden}
+  .app{height:100%;display:grid;grid-template-rows:52px 1fr 168px;gap:10px;padding:10px}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .btn,.field{
+    border:1px solid #ffffff1a;background:linear-gradient(180deg,#0d121c,#080b12);color:var(--text);
+    border-radius:12px;padding:8px 12px;font-size:12px;letter-spacing:.03em;box-shadow:0 0 0 1px #000 inset,0 0 24px #0008;
+  }
+  .btn{cursor:pointer}
+  .btn:hover{border-color:#d19dff66;box-shadow:0 0 0 1px #000 inset,0 0 18px #c464ff26}
+  .btn.active{border-color:#d189ff99;box-shadow:0 0 18px #b141ff33}
+  .field{min-width:180px}
+  .main{display:grid;grid-template-columns:300px 1fr 340px;gap:10px;min-height:0}
+  .panel{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid #ffffff14;border-radius:20px;position:relative;overflow:hidden;
+    box-shadow:0 10px 40px #000a, inset 0 0 0 1px #0008;
+    backdrop-filter: blur(12px);
+  }
+  .panel::before{
+    content:"";position:absolute;inset:0;background:radial-gradient(circle at top, #d18cff12, transparent 36%);pointer-events:none
+  }
+  .panel h3{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f4dcff;opacity:.9}
+  .section{padding:14px 16px;border-bottom:1px solid #ffffff0d}
+  .section:last-child{border-bottom:0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .small{font-size:12px;color:var(--muted)}
+  .tiny{font-size:11px;color:var(--muted)}
+  .kv{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:12px;margin-top:8px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:#ffffff0a;border:1px solid #ffffff12;font-size:11px;margin-right:6px;margin-top:6px}
+  .dot{width:7px;height:7px;border-radius:50%}
+  .vesselWrap{position:relative;min-height:0}
+  canvas{width:100%;height:100%;display:block}
+  .overlayTop{position:absolute;left:16px;right:16px;top:12px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+  .overlayBlock{background:#04070dc7;border:1px solid #ffffff12;border-radius:14px;padding:10px 12px;backdrop-filter: blur(8px);max-width:40%}
+  .overlayBlock .title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#f0c7ff;margin-bottom:4px}
+  .overlayBottom{position:absolute;left:16px;right:16px;bottom:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+  .metricGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+  .metric{padding:8px 10px;border-radius:12px;background:#ffffff08;border:1px solid #ffffff10}
+  .metric .label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#bdc8ea}
+  .metric .value{font-size:16px;margin-top:4px}
+  .tree{padding:8px 0 20px 0;max-height:100%;overflow:auto}
+  .treeNode{padding-left:10px;margin-left:12px;border-left:1px solid #ffffff12}
+  .treeItem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;margin:3px 6px;cursor:pointer;border:1px solid transparent}
+  .treeItem:hover{background:#ffffff08;border-color:#ffffff14}
+  .treeItem.active{background:#c25cff12;border-color:#d37cff66;box-shadow:0 0 16px #b14dff22 inset}
+  .treeTag{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#f4d2ff;background:#ffffff0a;border:1px solid #ffffff14;padding:2px 6px;border-radius:999px}
+  .treeLabel{font-size:12px;flex:1}
+  .search{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #ffffff14;background:#04070ddd;color:var(--text);outline:none}
+  .forensic{display:grid;grid-template-columns:1.15fr .85fr .9fr;gap:10px;min-height:0}
+  .log{height:100%;overflow:auto;padding:10px 14px;font-size:12px}
+  .logLine{padding:3px 0;border-bottom:1px solid #ffffff08}
+  .good{color:var(--good)} .warn{color:var(--warn)} .danger{color:var(--danger)} .accent{color:#f0b2ff}
+  .bar{height:8px;border-radius:999px;background:#ffffff0d;overflow:hidden;border:1px solid #ffffff12}
+  .bar > span{display:block;height:100%;background:linear-gradient(90deg,#74d7ff,#cf6dff,#ff9ad3)}
+  .list{padding:10px 14px;overflow:auto;height:100%}
+  .listItem{padding:8px 10px;border-radius:12px;background:#ffffff06;border:1px solid #ffffff10;margin-bottom:8px}
+  .hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:11px;color:#d8c8ff;background:#04070dcc;border:1px solid #ffffff12;border-radius:999px;padding:7px 12px;pointer-events:none}
+  .toggle{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #ffffff0a}
+  .switch{width:40px;height:22px;border-radius:999px;background:#ffffff12;position:relative;border:1px solid #ffffff18;cursor:pointer}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#f3f4ff;transition:.18s}
+  .switch.on{background:linear-gradient(90deg,#8a4cff,#d87cff)}
+  .switch.on::after{left:20px}
+  .footerNote{position:absolute;right:16px;bottom:12px;font-size:11px;color:#b9aee1}
+  .legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+  .legend .pill{margin:0}
+  @media (max-width:1200px){
+    .main{grid-template-columns:280px 1fr 300px}
+    .forensic{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="toolbar mono">
+    <button class="btn" id="resetBtn">Reset</button>
+    <button class="btn" id="presentationBtn">Presentation</button>
+    <button class="btn active" id="debugBtn">Debug</button>
+    <button class="btn active" id="pulseBtn">Pulse Traffic</button>
+    <button class="btn" id="growBtn">Stimulate Growth</button>
+    <button class="btn" id="fractureBtn">Induce Fracture</button>
+    <input class="field mono" id="seedField" value="F1B49B1CB10D6FED" />
+    <button class="btn" id="saveBtn">Save Bookmark</button>
+    <button class="btn" id="loadBtn">Load Bookmark</button>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <div class="section">
+        <h3>Matrix / Wetware State</h3>
+        <div class="small mono" id="matrixText"></div>
+        <div class="legend">
+          <span class="pill"><span class="dot" style="background:#74d7ff"></span> observation</span>
+          <span class="pill"><span class="dot" style="background:#cf6dff"></span> inference</span>
+          <span class="pill"><span class="dot" style="background:#8dffb3"></span> repair</span>
+          <span class="pill"><span class="dot" style="background:#ffd76a"></span> writeback</span>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Cluster Inspector</h3>
+        <div id="clusterMeta" class="small"></div>
+        <div class="metricGrid">
+          <div class="metric"><div class="label">Capacity</div><div class="value" id="capValue">0</div><div class="bar"><span id="capBar" style="width:0%"></span></div></div>
+          <div class="metric"><div class="label">Load</div><div class="value" id="loadValue">0</div><div class="bar"><span id="loadBar" style="width:0%"></span></div></div>
+          <div class="metric"><div class="label">Coherence</div><div class="value" id="cohValue">0</div><div class="bar"><span id="cohBar" style="width:0%"></span></div></div>
+          <div class="metric"><div class="label">Fracture</div><div class="value" id="fracValue">0</div><div class="bar"><span id="fracBar" style="width:0%"></span></div></div>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Probe Settings</h3>
+        <div class="toggle"><span class="small">Show Probe</span><div class="switch on" data-toggle="showProbe"></div></div>
+        <div class="toggle"><span class="small">Free Roam</span><div class="switch" data-toggle="freeRoam"></div></div>
+        <div class="toggle"><span class="small">Show Path</span><div class="switch on" data-toggle="showPath"></div></div>
+        <div class="toggle"><span class="small">Show Spawn</span><div class="switch on" data-toggle="showSpawn"></div></div>
+      </div>
+    </div>
+
+    <div class="panel vesselWrap">
+      <div class="hint mono">drag rotate • wheel zoom • click cluster • shift-click two clusters to hard-route</div>
+      <canvas id="vessel"></canvas>
+      <div class="overlayTop mono">
+        <div class="overlayBlock">
+          <div class="title">Proto-Synth Vessel</div>
+          <div style="font-size:20px;letter-spacing:.08em;color:#ffdc9c">SYNTH / WETWARE CORE V2</div>
+          <div class="tiny">virtual simulated physics capacity-weighted engine</div>
+        </div>
+        <div class="overlayBlock" style="text-align:right">
+          <div class="title">Eye Command</div>
+          <div id="eyeText" class="small"></div>
+        </div>
+      </div>
+      <div class="overlayBottom mono">
+        <div class="overlayBlock">
+          <div class="title">Shell Status</div>
+          <div id="shellText" class="small"></div>
+        </div>
+        <div class="overlayBlock" style="text-align:right">
+          <div class="title">Selection</div>
+          <div id="selectionText" class="small"></div>
+        </div>
+      </div>
+      <div class="footerNote mono">validator OK • observer warp is shell-only • branch extraction live</div>
+    </div>
+
+    <div class="panel">
+      <div class="section">
+        <h3>Semantic Branch Extraction</h3>
+        <input id="searchBox" class="search mono" placeholder="search branches / raw / primary / term" />
+        <div class="tiny" style="margin-top:8px">selected cognition zone emits inspectable hierarchy</div>
+      </div>
+      <div class="tree" id="tree"></div>
+    </div>
+  </div>
+
+  <div class="forensic">
+    <div class="panel">
+      <div class="section"><h3>Runtime / Receipt Log</h3></div>
+      <div class="log mono" id="log"></div>
+    </div>
+    <div class="panel">
+      <div class="section"><h3>Routes / Signals</h3></div>
+      <div class="list mono" id="routeList"></div>
+    </div>
+    <div class="panel">
+      <div class="section"><h3>Writeback / Provenance</h3></div>
+      <div class="list mono" id="forensicList"></div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('vessel');
+  const ctx = canvas.getContext('2d');
+  const state = {
+    rotX: -0.18,
+    rotY: 0.55,
+    zoom: 1,
+    showProbe: true,
+    freeRoam: false,
+    showPath: true,
+    showSpawn: true,
+    pulseTraffic: true,
+    presentation: false,
+    debug: true,
+    shellRadius: 220,
+    points: [],
+    shellPoints: [],
+    routes: [],
+    pulses: [],
+    clusters: [],
+    selectedId: null,
+    secondaryId: null,
+    logs: [],
+    routeLocks: [],
+    time: 0,
+    seed: document.getElementById('seedField').value,
+    mouse: { x: 0, y: 0, active: false },
+    observerOnlyWarp: true,
+  };
+
+  const families = [
+    {name:'concepts', color:'#8fd2ff'},
+    {name:'debates', color:'#ff9f78'},
+    {name:'glossary', color:'#c58dff'},
+    {name:'passages', color:'#fff07e'},
+    {name:'meta', color:'#7effbd'},
+    {name:'reception', color:'#74b2ff'},
+  ];
+
+  function rngFactory(seedStr){
+    let h = 2166136261 >>> 0;
+    for (let i=0;i<seedStr.length;i++) h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
+    return function(){
+      h += h << 13; h ^= h >>> 7; h += h << 3; h ^= h >>> 17; h += h << 5;
+      return ((h >>> 0) / 4294967296);
+    };
+  }
+  let rand = rngFactory(state.seed);
+
+  function log(line, cls=''){ state.logs.unshift({line, cls, t:Date.now()}); if(state.logs.length>70) state.logs.pop(); renderLog(); }
+
+  function init(){
+    rand = rngFactory(state.seed);
+    buildShell();
+    buildClusters();
+    buildRoutes();
+    pickCluster(state.clusters[0].id);
+    log(`boot::seed=${state.seed} clusters=${state.clusters.length} routes=${state.routes.length}`, 'good');
+    updateStaticPanels();
+    renderRouteList();
+    renderForensics();
+  }
+
+  function buildShell(){
+    state.shellPoints = [];
+    state.points = [];
+    for(let i=0;i<900;i++){
+      const a = rand()*Math.PI*2;
+      const b = Math.acos(2*rand()-1);
+      const r = state.shellRadius * (0.96 + rand()*0.06);
+      state.shellPoints.push({
+        x:r*Math.sin(b)*Math.cos(a),
+        y:r*Math.cos(b),
+        z:r*Math.sin(b)*Math.sin(a)
+      });
+    }
+    for(let i=0;i<1600;i++){
+      const a = rand()*Math.PI*2;
+      const b = Math.acos(2*rand()-1);
+      const rr = Math.cbrt(rand()) * state.shellRadius*0.72;
+      const density = 0.35 + rand()*0.65;
+      state.points.push({
+        x:rr*Math.sin(b)*Math.cos(a),
+        y:rr*Math.cos(b)*0.92,
+        z:rr*Math.sin(b)*Math.sin(a),
+        density,
+        family: families[(i/families.length|0)%families.length]
+      });
+    }
+  }
+
+  function makeBranchTree(cluster){
+    const fam = cluster.family.name;
+    const wordSets = {
+      concepts:['demiurge','eikos-mythos','paradigm-copy','cosmic-chaos','reason-and-necessity','receptacle-chora','time-moving-image-eternity','world-soul','status-form'],
+      debates:['literal-vs-pedagogical-cosmogony','what-is-the-receptacle','false-friends','edition-decisions','external-references','health-checks'],
+      glossary:['terms','interlocutors','format','epistemic-rules','reader-notes'],
+      passages:['raw','primary','secondary','articles','commentary','map','reading-path','reading-plateau'],
+      meta:['route-policy','signal-semantic','wetware-pressure','capacity-limiter','fracture-guard'],
+      reception:['works','common-misreadings','archive-links','source-families','receipt-matrix']
+    };
+    const base = wordSets[fam] || wordSets.concepts;
+    return {
+      label: cluster.name,
+      tag: fam,
+      children: [
+        {label:'concepts', tag:'primary', children: base.slice(0,3).map(v=>({label:v, tag:'leaf'}))},
+        {label:'debates', tag:'secondary', children: base.slice(3,6).map(v=>({label:v, tag:'leaf'}))},
+        {label:'glossary', tag:'support', children: base.slice(6,9).map(v=>({label:v, tag:'leaf'}))},
+        {label:'meta', tag:'ops', children:[
+          {label:`capacity-${Math.round(cluster.capacity*100)}`, tag:'metric'},
+          {label:`coherence-${Math.round(cluster.coherence*100)}`, tag:'metric'},
+          {label:`fracture-${Math.round(cluster.fracture*100)}`, tag:'metric'}
+        ]},
+        {label:'passages', tag:'source', children:[
+          {label:'raw', tag:'raw'},
+          {label:'primary', tag:'primary'},
+          {label:'secondary', tag:'secondary'}
+        ]}
+      ]
+    };
+  }
+
+  function buildClusters(){
+    state.clusters = [];
+    const centers = [
+      [-80, 90, -10], [45, 120, 55], [110, 45, 50], [70, -10, -55],
+      [-95, 10, 60], [-60, -85, -20], [20, -110, 35], [0, 20, 0], [125,-30,95], [-125,55,-80]
+    ];
+    for(let i=0;i<centers.length;i++){
+      const fam = families[i % families.length];
+      const [x,y,z] = centers[i];
+      const capacity = 0.45 + rand()*0.5;
+      const load = 0.18 + rand()*0.6;
+      const coherence = 0.35 + rand()*0.55;
+      const fracture = Math.max(0.02, load > capacity ? 0.45 + rand()*0.3 : 0.04 + rand()*0.18);
+      const mass = 30 + rand()*55;
+      const cluster = {
+        id:'cluster-'+i,
+        name:`${fam.name}:${i.toString().padStart(2,'0')}`,
+        family:fam,
+        x,y,z,mass,capacity,load,coherence,fracture,
+        confidence: Math.max(0.25, coherence - fracture*0.5 + rand()*0.2),
+      };
+      cluster.branch = makeBranchTree(cluster);
+      state.clusters.push(cluster);
+    }
+  }
+
+  function buildRoutes(){
+    state.routes = [];
+    state.pulses = [];
+    for(let i=0;i<state.clusters.length;i++){
+      for(let j=i+1;j<state.clusters.length;j++){
+        const a = state.clusters[i], b = state.clusters[j];
+        const dx=a.x-b.x, dy=a.y-b.y, dz=a.z-b.z;
+        const d = Math.hypot(dx,dy,dz);
+        if (d < 155 || rand() > 0.82) {
+          const kinds = ['observe','infer','repair','writeback'];
+          const kind = kinds[(i+j)%kinds.length];
+          state.routes.push({
+            id:`route-${i}-${j}`,
+            a:a.id,b:b.id, kind,
+            bandwidth: 0.25 + rand()*0.75,
+            latency: 8 + rand()*42,
+            congestion: Math.max(0.05, (a.load+b.load)/2 - ((a.capacity+b.capacity)/2)*0.4 + rand()*0.15),
+            stability: 0.4 + rand()*0.55,
+          });
+          if(rand()>0.35) state.pulses.push({route:`route-${i}-${j}`, t:rand()});
+        }
+      }
+    }
+  }
+
+  function kindColor(kind){
+    return ({observe:'#74d7ff', infer:'#cf6dff', repair:'#8dffb3', writeback:'#ffd76a'})[kind] || '#fff';
+  }
+
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function rotatePoint(p){
+    let {x,y,z} = p;
+    const cy = Math.cos(state.rotY), sy = Math.sin(state.rotY);
+    let x1 = x*cy - z*sy;
+    let z1 = x*sy + z*cy;
+    const cx = Math.cos(state.rotX), sx = Math.sin(state.rotX);
+    let y2 = y*cx - z1*sx;
+    let z2 = y*sx + z1*cx;
+    return {x:x1,y:y2,z:z2};
+  }
+
+  function project(p){
+    const r = rotatePoint(p);
+    const scale = (420 / (420 + r.z + 220)) * state.zoom;
+    return {
+      x: canvas.clientWidth/2 + r.x * scale,
+      y: canvas.clientHeight/2 + r.y * scale,
+      z:r.z,
+      scale
+    };
+  }
+
+
+  function observerStrength(){
+    const base = state.presentation ? 0.22 : 0.14;
+    const debugDampen = state.debug ? 0.75 : 1;
+    return base * debugDampen;
+  }
+
+  function warpScreenPoint(pt, type='interior'){
+    if(!state.mouse.active) return pt;
+    const mx = state.mouse.x, my = state.mouse.y;
+    const dx = pt.x - mx, dy = pt.y - my;
+    const dist = Math.hypot(dx, dy);
+    const radius = type === 'shell' ? 175 : type === 'route' ? 150 : type === 'cluster' ? 120 : 135;
+    if (dist > radius) return pt;
+    const falloff = 1 - (dist / radius);
+    const strengthBase = observerStrength();
+    const typeScale = type === 'shell' ? 1.0 : type === 'route' ? 0.7 : type === 'cluster' ? 0.55 : 0.45;
+    const strength = strengthBase * typeScale * falloff * falloff;
+    const nx = dist > 0.0001 ? dx / dist : 0;
+    const ny = dist > 0.0001 ? dy / dist : 0;
+    const pull = 20 * strength;
+    const tangent = 6 * strength * Math.sin(state.time * 0.002 + dist * 0.03);
+    return {
+      ...pt,
+      x: pt.x + nx * pull - ny * tangent,
+      y: pt.y + ny * pull + nx * tangent,
+      observerGlow: falloff
+    };
+  }
+
+  function drawObserverField(){
+    if(!state.mouse.active) return;
+    const x = state.mouse.x, y = state.mouse.y;
+    const radius = state.presentation ? 130 : 100;
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    grad.addColorStop(0, 'rgba(230,180,255,0.10)');
+    grad.addColorStop(0.35, 'rgba(150,110,255,0.055)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(220,180,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x, y, radius * 0.62 + Math.sin(state.time * 0.005) * 2, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function drawShell(){
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const cx = w/2, cy = h/2;
+    ctx.clearRect(0,0,w,h);
+    drawObserverField();
+
+    const rg = ctx.createRadialGradient(cx,cy,40,cx,cy,state.shellRadius*1.25);
+    rg.addColorStop(0,'rgba(220,120,255,0.18)');
+    rg.addColorStop(0.3,'rgba(165,80,255,0.14)');
+    rg.addColorStop(0.6,'rgba(94,49,170,0.08)');
+    rg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = rg;
+    ctx.beginPath(); ctx.arc(cx,cy,state.shellRadius*1.38*state.zoom,0,Math.PI*2); ctx.fill();
+
+    // shell rings
+    for(let i=0;i<9;i++){
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate((i/9)*Math.PI + state.time*0.00035*(i%2?1:-1));
+      ctx.scale(1, 0.25 + i*0.04);
+      ctx.strokeStyle = i===4 ? 'rgba(223,143,255,0.18)' : 'rgba(113,122,255,0.09)';
+      ctx.lineWidth = i===4 ? 1.4 : 1;
+      ctx.beginPath();
+      ctx.arc(0,0,state.shellRadius*state.zoom*(0.35+i*0.08),0,Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // shell point lattice
+    const shell = state.shellPoints.map(p=>warpScreenPoint({...project(p)}, 'shell')).sort((a,b)=>a.z-b.z);
+    for(const p of shell){
+      const a = 0.08 + Math.max(0, (p.scale-0.4))*0.16 + (p.observerGlow||0)*0.06;
+      ctx.fillStyle = `rgba(150,125,255,${a})`;
+      ctx.fillRect(p.x,p.y,1.2,1.2);
+    }
+
+    // interior substrate points
+    const pts = state.points.map(p=>{
+      const sp = warpScreenPoint(project(p), 'interior');
+      return {...sp, fam:p.family, density:p.density};
+    }).sort((a,b)=>a.z-b.z);
+
+    for(const p of pts){
+      const size = Math.max(1, 1.5 + p.scale*2.4*p.density);
+      const baseA = 0.12 + p.density*0.25;
+      ctx.fillStyle = hexToRgba(p.fam.color, baseA);
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,size,0,Math.PI*2);
+      ctx.fill();
+    }
+
+    // routes
+    if(state.showPath){
+      for(const route of state.routes){
+        const a = getCluster(route.a), b = getCluster(route.b);
+        const pa = warpScreenPoint(project(a), 'route'), pb = warpScreenPoint(project(b), 'route');
+        const mid = warpScreenPoint({x:(pa.x + pb.x)/2, y:(pa.y + pb.y)/2}, 'route');
+        const mx = mid.x + ((a.id < b.id ? 1 : -1) * 14 * Math.sin(state.time*0.001 + route.latency));
+        const my = mid.y - 18 - route.congestion*32;
+        ctx.strokeStyle = hexToRgba(kindColor(route.kind), 0.14 + route.bandwidth*0.2);
+        ctx.lineWidth = 1 + route.bandwidth*1.4;
+        ctx.beginPath();
+        ctx.moveTo(pa.x,pa.y);
+        ctx.quadraticCurveTo(mx,my,pb.x,pb.y);
+        ctx.stroke();
+      }
+    }
+
+    // pulses
+    if(state.pulseTraffic){
+      for(const pulse of state.pulses){
+        const route = state.routes.find(r=>r.id===pulse.route); if(!route) continue;
+        const a = getCluster(route.a), b = getCluster(route.b);
+        const pa = warpScreenPoint(project(a), 'route'), pb = warpScreenPoint(project(b), 'route');
+        const t = (pulse.t + state.time*0.00016*(1 + route.bandwidth)) % 1;
+        const mid = warpScreenPoint({x:(pa.x + pb.x)/2, y:(pa.y + pb.y)/2}, 'route');
+        const mx = mid.x + ((a.id < b.id ? 1 : -1) * 14 * Math.sin(state.time*0.001 + route.latency));
+        const my = mid.y - 18 - route.congestion*32;
+        const x = quad(pa.x,mx,pb.x,t), y = quad(pa.y,my,pb.y,t);
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = kindColor(route.kind);
+        ctx.fillStyle = kindColor(route.kind);
+        ctx.beginPath(); ctx.arc(x,y,2.6 + route.bandwidth*2.2,0,Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // clusters
+    const cps = state.clusters.map(c=>({c, p:warpScreenPoint(project(c), 'cluster')})).sort((a,b)=>a.p.z-b.p.z);
+    for(const {c,p} of cps){
+      const selected = c.id===state.selectedId || c.id===state.secondaryId;
+      const radius = 5 + c.mass*0.08*p.scale;
+      ctx.shadowBlur = selected ? 22 : 10;
+      ctx.shadowColor = c.family.color;
+      ctx.fillStyle = c.family.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,radius,0,Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = selected ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.22)';
+      ctx.lineWidth = selected ? 1.8 : 1;
+      ctx.beginPath(); ctx.arc(p.x,p.y,radius+2,0,Math.PI*2); ctx.stroke();
+      if(selected){
+        ctx.strokeStyle = 'rgba(236,159,255,0.3)';
+        ctx.beginPath(); ctx.arc(p.x,p.y,radius+8+Math.sin(state.time*0.006)*2,0,Math.PI*2); ctx.stroke();
+      }
+    }
+
+    // probe
+    if(state.showProbe){
+      const probePos = warpScreenPoint(project({x:0,y:0,z:0}), 'cluster');
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(probePos.x, probePos.y, 18, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(probePos.x-24, probePos.y); ctx.lineTo(probePos.x+24, probePos.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(probePos.x, probePos.y-24); ctx.lineTo(probePos.x, probePos.y+24); ctx.stroke();
+      ctx.fillStyle = '#f0b2ff'; ctx.fillRect(probePos.x-5, probePos.y-5, 10, 10);
+    }
+  }
+
+  function quad(a,m,b,t){ return (1-t)*(1-t)*a + 2*(1-t)*t*m + t*t*b; }
+
+  function hexToRgba(hex, a){
+    const h = hex.replace('#','');
+    const bigint = parseInt(h,16);
+    const r=(bigint>>16)&255, g=(bigint>>8)&255, b=bigint&255;
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function getCluster(id){ return state.clusters.find(c=>c.id===id); }
+
+  function pickCluster(id){
+    state.selectedId = id;
+    state.secondaryId = null;
+    const c = getCluster(id);
+    if(!c) return;
+    document.getElementById('selectionText').innerHTML = `${c.name}<br>${c.family.name} • conf ${pct(c.confidence)}`;
+    document.getElementById('clusterMeta').innerHTML = `
+      <div><span class="accent">${c.name}</span></div>
+      <div class="tiny">family=${c.family.name} mass=${c.mass.toFixed(1)} confidence=${pct(c.confidence)}</div>
+      <div class="tiny">load-bearing cognition zone with live branch extraction</div>`;
+    setMetric('cap', c.capacity); setMetric('load', c.load); setMetric('coh', c.coherence); setMetric('frac', c.fracture);
+    renderTree(c.branch);
+    renderRouteList(); renderForensics();
+    log(`select::${c.name} family=${c.family.name} capacity=${pct(c.capacity)} coherence=${pct(c.coherence)}`, 'accent');
+  }
+
+  function setMetric(key,val){
+    document.getElementById(key+'Value').textContent = pct(val);
+    document.getElementById(key+'Bar').style.width = `${Math.max(3,val*100)}%`;
+  }
+
+  function pct(n){ return `${Math.round(n*100)}%`; }
+
+  function renderTree(root){
+    const q = document.getElementById('searchBox').value.trim().toLowerCase();
+    const el = document.getElementById('tree');
+    el.innerHTML = '';
+    function matches(node){
+      if(!q) return true;
+      if(node.label.toLowerCase().includes(q) || (node.tag||'').toLowerCase().includes(q)) return true;
+      return (node.children||[]).some(matches);
+    }
+    function rec(node, parent, depth=0){
+      if(!matches(node)) return;
+      const wrap = document.createElement('div');
+      if(depth>0) wrap.className='treeNode';
+      const item = document.createElement('div');
+      item.className='treeItem';
+      item.innerHTML = `<span class="dot" style="background:${depth===0 ? '#f0b2ff' : '#7dcfff'}"></span><span class="treeLabel mono">${node.label}</span><span class="treeTag">${node.tag||'node'}</span>`;
+      item.onclick = ()=>{
+        document.querySelectorAll('.treeItem.active').forEach(n=>n.classList.remove('active'));
+        item.classList.add('active');
+        log(`branch::inspect label=${node.label} tag=${node.tag||'node'}`, 'good');
+      };
+      wrap.appendChild(item);
+      (node.children||[]).forEach(ch=>rec(ch, wrap, depth+1));
+      parent.appendChild(wrap);
+    }
+    rec(root, el, 0);
+  }
+
+  function renderLog(){
+    const el = document.getElementById('log');
+    el.innerHTML = state.logs.map(l=>`<div class="logLine ${l.cls}">${escapeHtml(l.line)}</div>`).join('');
+  }
+
+  function renderRouteList(){
+    const el = document.getElementById('routeList');
+    const sel = state.selectedId;
+    const routes = state.routes.filter(r=>!sel || r.a===sel || r.b===sel).slice(0,18);
+    el.innerHTML = routes.map(r=>`<div class="listItem">
+      <div><span style="color:${kindColor(r.kind)}">${r.kind}</span> ${r.id}</div>
+      <div class="tiny">bw=${r.bandwidth.toFixed(2)} latency=${r.latency.toFixed(1)}ms congestion=${r.congestion.toFixed(2)}</div>
+      <div class="tiny">${r.a} ⇄ ${r.b}</div>
+    </div>`).join('') || `<div class="listItem tiny">no routes for selection</div>`;
+  }
+
+  function renderForensics(){
+    const el = document.getElementById('forensicList');
+    const c = getCluster(state.selectedId) || state.clusters[0];
+    const rows = [
+      `receipt anchor=${c.id}`,
+      `source family=${c.family.name}`,
+      `capacity=${pct(c.capacity)} load=${pct(c.load)}`,
+      `coherence=${pct(c.coherence)} fracture=${pct(c.fracture)}`,
+      `writeback=${c.load>c.capacity?'contested':'stable'}`,
+      `provenance=local-simulated-wetware-core`,
+      `branch_count=${countBranchNodes(c.branch)}`,
+    ];
+    el.innerHTML = rows.map((r,i)=>`<div class="listItem ${i===4 && c.load>c.capacity ? 'warn':''}">${r}</div>`).join('');
+  }
+
+  function countBranchNodes(node){ return 1 + (node.children||[]).reduce((a,b)=>a+countBranchNodes(b),0); }
+
+  function updateStaticPanels(){
+    document.getElementById('matrixText').innerHTML = [
+      'nodes=1600 shell=900 substrate=load-bearing',
+      `clusters=${state.clusters.length} routes=${state.routes.length} pulseTraffic=${state.pulseTraffic?1:0}`,
+      'seamlinks=wetware semantic-bridge receipts=live',
+      'builder=swarm probe=spawn hold=false eye=auto',
+      'v2 adds voxel-feel substrate + branch extraction + route traffic'
+    ].join('<br>');
+    document.getElementById('eyeText').innerHTML = `mode=AUTO approved=yes<br>target=spawn_holdoff p=0.99<br>reason=path/semantic fitness`;
+    document.getElementById('shellText').innerHTML = `seed=${state.seed}<br>shellRadius=${state.shellRadius}<br>freeRoam=${state.freeRoam}<br>observerWarp=visual-only`;
+  }
+
+  function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c])); }
+
+  // interaction
+  let dragging = false, lastX = 0, lastY = 0;
+  canvas.addEventListener('mousedown', (e)=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; });
+  window.addEventListener('mouseup', ()=>dragging=false);
+  window.addEventListener('mousemove', (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    state.mouse.x = e.clientX - rect.left;
+    state.mouse.y = e.clientY - rect.top;
+    state.mouse.active = state.mouse.x >= 0 && state.mouse.y >= 0 && state.mouse.x <= rect.width && state.mouse.y <= rect.height;
+    if(!dragging) return;
+    const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;
+    state.rotY += dx*0.006; state.rotX += dy*0.004;
+  });
+  canvas.addEventListener('mouseleave', ()=>{ state.mouse.active = false; });
+  canvas.addEventListener('mouseenter', (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    state.mouse.x = e.clientX - rect.left;
+    state.mouse.y = e.clientY - rect.top;
+    state.mouse.active = true;
+  });
+  canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); state.zoom = Math.min(1.8, Math.max(0.55, state.zoom - Math.sign(e.deltaY)*0.08)); }, {passive:false});
+
+  canvas.addEventListener('click', (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    let best = null, bestD = 1e9;
+    for(const c of state.clusters){
+      const p = project(c); const d = Math.hypot(p.x-x,p.y-y);
+      if(d < bestD){ bestD = d; best = c; }
+    }
+    if(best && bestD < 28){
+      if(e.shiftKey && state.selectedId && state.selectedId !== best.id){
+        state.secondaryId = best.id;
+        const a = state.selectedId, b = best.id;
+        if(!state.routes.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a))){
+          state.routes.push({id:`route-lock-${Date.now()}`,a,b,kind:'writeback',bandwidth:0.95,latency:4,congestion:0.08,stability:0.96});
+          log(`route::lock ${a} ⇄ ${b} hard-writeback created`, 'warn');
+          renderRouteList();
+        }
+      } else {
+        pickCluster(best.id);
+      }
+    }
+  });
+
+  document.querySelectorAll('.switch').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      sw.classList.toggle('on');
+      const key = sw.dataset.toggle;
+      state[key] = sw.classList.contains('on');
+      updateStaticPanels();
+      log(`toggle::${key}=${state[key]}`, 'good');
+    });
+  });
+
+  document.getElementById('searchBox').addEventListener('input', ()=>{
+    const c = getCluster(state.selectedId); if(c) renderTree(c.branch);
+  });
+
+  document.getElementById('resetBtn').onclick = ()=>{
+    state.rotX=-0.18; state.rotY=0.55; state.zoom=1; state.routeLocks=[]; init(); log('reset::vessel state restored','good');
+  };
+  document.getElementById('pulseBtn').onclick = (e)=>{ state.pulseTraffic=!state.pulseTraffic; e.target.classList.toggle('active', state.pulseTraffic); log(`pulseTraffic=${state.pulseTraffic}`,'accent'); updateStaticPanels(); };
+  document.getElementById('debugBtn').onclick = (e)=>{ state.debug=!state.debug; e.target.classList.toggle('active', state.debug); document.querySelector('.forensic').style.display = state.debug ? 'grid' : 'none'; log(`debug=${state.debug}`,'accent'); };
+  document.getElementById('presentationBtn').onclick = (e)=>{ state.presentation=!state.presentation; e.target.classList.toggle('active', state.presentation); document.body.style.background = state.presentation ? 'radial-gradient(circle at 50% 35%, #1b092f 0%, #06070b 42%, #020308 100%)' : ''; log(`presentation=${state.presentation}`,'accent'); };
+  document.getElementById('growBtn').onclick = ()=>{
+    for(const c of state.clusters){ c.coherence=Math.min(1,c.coherence+0.04*rand()); c.load=Math.min(1,c.load+0.02*rand()); c.mass+=rand()*5; c.branch.children[3].children[1].label=`coherence-${Math.round(c.coherence*100)}`; }
+    state.points.forEach(p=>{ p.density=Math.min(1,p.density+rand()*0.08); });
+    if(state.selectedId) pickCluster(state.selectedId);
+    log('stimulus::substrate growth reinforced repeated concepts','good');
+  };
+  document.getElementById('fractureBtn').onclick = ()=>{
+    const c = getCluster(state.selectedId) || state.clusters[0];
+    c.fracture=Math.min(1,c.fracture+0.12); c.coherence=Math.max(0,c.coherence-0.09); c.load=Math.min(1,c.load+0.07);
+    c.branch.children[3].children[2].label=`fracture-${Math.round(c.fracture*100)}`;
+    pickCluster(c.id);
+    log(`fracture::${c.name} contradiction spike + route stress`, 'danger');
+  };
+  document.getElementById('saveBtn').onclick = ()=>{
+    const payload = { seed: state.seed, selectedId: state.selectedId, rotX: state.rotX, rotY: state.rotY, zoom: state.zoom };
+    localStorage.setItem('protoSynthWetwareBookmark', JSON.stringify(payload));
+    log('bookmark::saved local state','good');
+  };
+  document.getElementById('loadBtn').onclick = ()=>{
+    const raw = localStorage.getItem('protoSynthWetwareBookmark');
+    if(!raw) return log('bookmark::none found','warn');
+    const v = JSON.parse(raw); state.seed=v.seed||state.seed; document.getElementById('seedField').value=state.seed; init(); state.rotX=v.rotX; state.rotY=v.rotY; state.zoom=v.zoom; if(v.selectedId) pickCluster(v.selectedId); log('bookmark::loaded local state','good');
+  };
+  document.getElementById('seedField').addEventListener('change', (e)=>{ state.seed=e.target.value || 'F1B49B1CB10D6FED'; init(); log(`seed::recompiled ${state.seed}`,'good'); });
+
+  function animate(ts){
+    state.time = ts;
+    // subtle dynamics
+    for(const c of state.clusters){
+      c.load += Math.sin(ts*0.0005 + c.mass)*0.0007;
+      c.load = Math.max(0.08, Math.min(1, c.load));
+      c.fracture = Math.max(0.01, Math.min(1, c.fracture + (c.load-c.capacity)*0.0008));
+      c.confidence = Math.max(0.05, Math.min(1, c.coherence - c.fracture*0.45 + 0.18));
+    }
+    for(const r of state.routes){
+      const a = getCluster(r.a), b = getCluster(r.b);
+      r.congestion = Math.max(0.02, Math.min(1, ((a.load+b.load)/2) - ((a.capacity+b.capacity)/2)*0.35 + 0.08 + Math.sin(ts*0.0007 + r.latency)*0.05));
+    }
+    drawShell();
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  init();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
