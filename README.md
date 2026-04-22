@@ -2,6 +2,8 @@
 
 A deterministic, seed-first universe simulation project that connects a browser-based universe observer, a Synth control shell, and ARC-Core into one broader AGI / simulation stack.
 
+> 🔐 **Built on [ARC-Core](https://github.com/GareBear99/ARC-Core)** — the authoritative event / receipt / authority kernel. `ARC_Console/` is shipped **inside this repo**: every seed event, universe record, case, proposal, and observation receipt flows through ARC-Core's FastAPI service.
+
 This repository is the public-facing concept and prototype package for a larger long-range goal: reconstructing a universe from seed-governed math first, rendering second, then using observation, control, and receipted intervention layers to study emergence, chemistry, life potential, and intelligence signatures.
 
 ## What this repo currently contains
@@ -34,27 +36,34 @@ This repo is one part of a larger ecosystem pursuing that architecture.
 
 ## Related repositories in the stack
 
-- [Proto-AGI](https://github.com/GareBear99/Proto-AGI)
-- [ARC-Core](https://github.com/GareBear99/ARC-Core)
-- [ARC-Turbo-OS](https://github.com/GareBear99/ARC-Turbo-OS)
-- [Arc-RAR](https://github.com/GareBear99/Arc-RAR)
-- [Proto-Synth_Grid_Engine](https://github.com/GareBear99/Proto-Synth_Grid_Engine)
-- [Seeded-Universe-Recreation-Engine](https://github.com/GareBear99/Seeded-Universe-Recreation-Engine)
-- [LuciferAI_Local](https://github.com/GareBear99/LuciferAI_Local)
-- [AGI_Photon-Quantum-Computing](https://github.com/GareBear99/AGI_Photon-Quantum-Computing)
+### The ARC governed-AI ecosystem (seven repos, frozen roles)
+
+- [**ARC-Core**](https://github.com/GareBear99/ARC-Core) — event / receipt / authority kernel *(backbone of this repo)*
+- [**arc-cognition-core**](https://github.com/GareBear99/arc-cognition-core) — model-growth lab
+- [**ARC-Neuron-LLMBuilder**](https://github.com/GareBear99/ARC-Neuron-LLMBuilder) — governed AI build loop with Gate v2
+- [**arc-language-module**](https://github.com/GareBear99/arc-language-module) — governed lexical truth
+- [**omnibinary-runtime**](https://github.com/GareBear99/omnibinary-runtime) — binary mirror / runtime ledger
+- [**Arc-RAR**](https://github.com/GareBear99/Arc-RAR) — archive / rollback bundles
+- [**arc-lucifer-cleanroom-runtime**](https://github.com/GareBear99/arc-lucifer-cleanroom-runtime) — deterministic operator kernel
+
+### Other consumer applications on the same backbone
+
+- [RiftAscent](https://github.com/GareBear99/RiftAscent) — canvas action game
+- [Proto-Synth_Grid_Engine](https://github.com/GareBear99/Proto-Synth_Grid_Engine) — blueprint-driven grid runtime
+- [Neo-VECTR_Solar_Sim_NASA_Standard](https://github.com/GareBear99/Neo-VECTR_Solar_Sim_NASA_Standard) — catalog-truth astronomy simulator
+- [TizWildinEntertainmentHUB](https://github.com/GareBear99/TizWildinEntertainmentHUB) — JUCE plugin ecosystem backend
 
 ## Where this repo fits in that stack
 
-This project is the **simulation / emergence / observation layer**.
+This project is the **simulation / emergence / observation layer** built directly on ARC-Core.
 
-- **Proto-AGI** frames the broader intelligence direction.
-- **ARC-Core** provides records, graphing, cases, proposals, watchlists, receipts, and operator-facing APIs.
-- **ARC-Turbo-OS** points toward a seed-rooted, event-spine runtime where state can be reconstructed and reused.
-- **Arc-RAR** explores portable archive / package handling across systems.
-- **Proto-Synth_Grid_Engine** provides the Synth shell and execution surface logic.
-- **LuciferAI_Local** is the local model/runtime side for intelligence augmentation.
-- **AGI_Photon-Quantum-Computing** represents the future compute/control substrate for higher-speed cognition and hardware orchestration.
-- **Seeded-Universe-Recreation-Engine** is where seeded world generation, chemistry, life potential, signal observation, and comparative intervention concepts meet.
+- **ARC-Core** provides the FastAPI-backed records, graphing, cases, proposals, watchlists, receipts, and operator APIs that power the `ARC_Console/` vendored inside this repo. Every seed event, universe record, and observation is an ARC-Core event.
+- **arc-cognition-core** and **ARC-Neuron-LLMBuilder** are where governed cognition candidates are built — future emergence-intelligence experiments will plug into their gate discipline.
+- **arc-lucifer-cleanroom-runtime** is the deterministic kernel direction — a natural fit for hosting seed-rooted universe replays.
+- **arc-language-module** is the governed lexical truth layer for naming emergent entities and behaviors.
+- **Arc-RAR** holds portable archives of seed runs and universe snapshots.
+- **omnibinary-runtime** is the binary mirror of the seeded state for downstream redistribution.
+- **Proto-Synth_Grid_Engine** provides the Synth shell and execution surface logic used alongside this engine.
 
 ## Current architecture
 
